@@ -2,7 +2,9 @@
 
 账号🐔了。~~只有标清..~~ 高清为主😅 gitee仓库被改私有了..
 
-gitee ip被ban，仓库链接已失效
+~~gitee ip被ban，仓库链接已失效~~
+
+仓库地址临时复活，能活多久看运气，存在频道缺失或无法播放的问题，回放功能仅migu源生效，还在测试。
 
 访问地址(可回看当天内容)
 
@@ -24,19 +26,24 @@ https://gh-proxy.com/https://raw.githubusercontent.com/develop202/migu_video/ref
 > 注意事项
 >
 > 1. 登录后使用不保证安全，请谨慎使用
-> 1. 需要国内IP才可正常访问
+> 1. 需要国内IP才可正常访问（非港澳台地区）
 
 ## 配置
 
-配置信息如下，默认本机和局域网可用
+默认本机和局域网可用，提供自定义token，格式: <http://ip:port/mpass/userid/token>（未设置mpass请删除），使用此方式建议把画质改到蓝光或更高<br>
+配置信息如下:
 
-| 变量名    | 默认值 | 类型   | 介绍                                                                                 |
-| --------- | ------ | ------ | ------------------------------------------------------------------------------------ |
-| muserId   |        | string | 用户id<br>可在网页端登录获取                                                         |
-| mtoken    |        | string | 用户token<br>可在网页端登录获取                                                      |
-| mport     | 1234   | number | 本地运行端口号                                                                       |
-| mhost     |        | string | 公网/自定义访问地址<br>格式<http://你的ip:1234>                                      |
-| mrateType | 3      | number | 画质<br>2: 标清<br>3: 高清<br>4: 蓝光<br>7: 原画<br>9: 4k<br>ps:蓝光及以上需要登录且有VIP |
+| 变量名          | 默认值 | 类型    | 介绍                                                                                      |
+| --------------- | ------ | ------- | ----------------------------------------------------------------------------------------- |
+| muserId         |        | string  | 用户id<br>可在网页端登录获取                                                              |
+| mtoken          |        | string  | 用户token<br>可在网页端登录获取                                                           |
+| mport           | 1234   | number  | 本地运行端口号                                                                            |
+| mhost           |        | string  | 公网/自定义访问地址<br>格式<http://ip:port>                                               |
+| mrateType       | 3      | number  | 画质<br>2: 标清<br>3: 高清<br>4: 蓝光<br>7: 原画<br>9: 4k<br>ps:蓝光及以上需要登录且有VIP |
+| mpass           |        | string  | 访问密码 大小写字母和数字<br>添加后访问格式 <http://ip:port/mpass/>...                    |
+| menableHDR      | true   | boolean | 是否开启HDR                                                                               |
+| menableH265     | true   | boolean | 是否开启h265(原画画质)，开启后可能存在兼容性问题，比如浏览器播放没有画面                  |
+| mupdateInterval | 6      | string  | 节目信息更新间隔，单位小时，不建议设置太短                                                |
 
 ## node
 

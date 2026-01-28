@@ -1,7 +1,7 @@
 import { dataList } from "./fetchList.js"
 import { appendFile, appendFileSync, copyFileSync, renameFileSync, writeFile } from "./fileUtil.js"
 import { updatePlaybackData } from "./playback.js"
-import { /* refreshToken as mrefreshToken, */ host, token, userId } from "../config.js"
+import { /* refreshToken as mrefreshToken, */ host, pass, token, userId } from "../config.js"
 import refreshToken from "./refreshToken.js"
 import { printGreen, printRed, printYellow } from "./colorOut.js"
 import { getDateString } from "./time.js"
@@ -105,7 +105,7 @@ async function updatePE(hours) {
     const dateString = getDateString(new Date())
     if (date == dateString) {
       relativeDate = "今天"
-    } else if (parseInt(date.substring(6)) > parseInt(dateString.substring(6))) {
+    } else if (parseInt(date) > parseInt(dateString)) {
       relativeDate = "明天"
     }
 
@@ -160,8 +160,8 @@ async function updatePE(hours) {
           appendFileSync(interfaceTXTPath, `${competitionDesc},\${replace}/${live.pID}\n`)
         }
       } catch (error) {
-        printRed(`${data.mgdbId} ${pkInfoTitle} 更新失败`)
-        printRed(error)
+        printYellow(`${data.mgdbId} ${pkInfoTitle} 更新失败 此警告不影响正常使用 可忽略`)
+        // printYellow(error)
       }
     }
     printGreen(`日期 ${date} 更新完成！`)

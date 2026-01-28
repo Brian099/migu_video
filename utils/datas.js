@@ -1,3 +1,5 @@
+// 更新时间
+const repoLinkUpdateTimestamp = 1769574780375
 // 回放
 const cntvNames = {
   "CCTV1综合": "cctv1",
@@ -21,4 +23,29 @@ const cntvNames = {
   "CCTV4美洲": "cctvamerica",
 }
 
-export { cntvNames }
+
+// 域名白名单
+const domainWhiteList = [
+  "tvpull.dxhmt.cn:9081",
+  "live.dxhmt.cn:9081",
+  "hlsztemgsplive.miguvideo.com:8080",
+  "play.kankanlive.com",
+  "ali-xwl.cztv.com",
+  "l.cztvcloud.com",
+  "live.ynurl.com",
+  "stream.hrbtv.net",
+  "play-a2.quklive.com",
+  "gxlive.snrtv.com",
+  "m3u8.channel.wsrtv.com.cn",
+  "jwcdnqx.hebyun.com.cn",
+  "nklive.nbs.cn",
+  "stream.thmz.com",
+  "pull-hls-f1.douyincdn.com",
+  "pull-flv-f1.douyincdn.com",
+  "pull-hs-f5.flive.douyincdn.com",
+  "hlsal-ldvt.qing.mgtv.com",
+  "bd-xwl.cztv.com",
+  "play-qukan.cztv.com",
+]
+
+export { cntvNames, domainWhiteList, repoLinkUpdateTimestamp }

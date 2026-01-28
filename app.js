@@ -1,17 +1,13 @@
 import http from "node:http"
-import { getAndroidURL, getAndroidURL720p } from "./utils/androidURL.js";
-import { readFileSync } from "./utils/fileUtil.js";
-import { host, port, rateType, token, userId } from "./config.js";
+import { host, pass, port, programInfoUpdateInterval, token, userId } from "./config.js";
 import { getDateTimeStr } from "./utils/time.js";
 import update from "./utils/updateData.js";
-import { printBlue, printDebug, printGreen, printGrey, printMagenta, printRed, printYellow } from "./utils/colorOut.js";
+import { printBlue, printGreen, printMagenta, printRed } from "./utils/colorOut.js";
 import { delay } from "./utils/fetchList.js";
+import { channel, interfaceStr } from "./utils/appUtils.js";
 
 // 运行时长
 var hours = 0
-// url缓存 降低请求频率
-const urlCache = {}
-
 let loading = false
 
 const server = http.createServer(async (req, res) => {
@@ -23,7 +19,41 @@ const server = http.createServer(async (req, res) => {
   loading = true
 
   // 获取请求方法、URL 和请求头
-  const { method, url, headers } = req;
+  let { method, url, headers } = req;
+  // 身份认证
+  if (pass != "") {
+    const urlSplit = url.split("/")
+    if (urlSplit[1] != pass) {
+      printRed(`身份认证失败`)
+      res.writeHead(200, { 'Content-Type': 'application/json;charset=UTF-8' });
+      res.end(`身份认证失败`); // 发送文件内容
+      loading = false
+      return
+    } else {
+      printGreen("身份认证成功")
+      // 有密码且传入用户信息
+      if (urlSplit.length > 3) {
+        url = url.substring(pass.length + 1)
+      } else {
+        url = urlSplit.length == 2 ? "/" : "/" + urlSplit[urlSplit.length - 1]
+      }
+    }
+  }
+
+  let urlToken = ""
+  let urlUserId = ""
+  // 匹配是否存在用户信息
+  if (/\/{1}[^\/\s]{1,}\/{1}[^\/\s]{1,}/.test(url)) {
+    const urlSplit = url.split("/")
+    if (urlSplit.length >= 3) {
+      urlUserId = urlSplit[1]
+      urlToken = urlSplit[2]
+      url = urlSplit.length == 3 ? "/" : "/" + urlSplit[urlSplit.length - 1]
+    }
+  } else {
+    urlUserId = userId
+    urlToken = token
+  }
 
   // printGreen("")
   printMagenta("请求地址：" + url)
@@ -39,250 +69,43 @@ const server = http.createServer(async (req, res) => {
     return
   }
 
-  // 响应接口内容
-  if (url == "/" || url == "/interface.txt" || url == "/m3u" || url == "/txt") {
-    try {
-      let data
-      // 读取文件内容
-      if (url == "/txt") {
-        data = readFileSync(process.cwd() + "/interfaceTXT.txt");
-      } else {
-        data = readFileSync(process.cwd() + "/interface.txt");
-      }
+  const interfaceList = "/,/interface.txt,/m3u,/txt,/playback.xml"
 
-      let replaceHost = `http://${headers.host}`
-
-      if (host != "" && (headers["x-real-ip"] || headers["x-forwarded-for"] || host.indexOf(headers.host) != -1)) {
-        replaceHost = host
-      }
-
-      data = `${data}`.replaceAll("${replace}", replaceHost);
-
-      let contentType = 'text/plain;charset=UTF-8'
-      if (url == "/m3u") {
-        // contentType = "audio/mpegurl;charset=UTF-8"
-        contentType = "audio/x-mpegurl; charset=utf-8"
-        res.setHeader('content-disposition', "inline; filename=\"interface.m3u\"");
-      }
-      // 设置响应头
-      res.setHeader('Content-Type', contentType);
-      res.statusCode = 200;
-      res.end(data); // 发送文件内容
-
-      loading = false
-      return
-    } catch (error) {
-      console.log(error)
-
-      res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-      res.end("访问异常")
-      printRed("接口文件响应异常")
-
-      loading = false
-      return
+  // 接口
+  if (interfaceList.indexOf(url) !== -1) {
+    const interfaceObj = interfaceStr(url, headers, urlUserId, urlToken)
+    if (interfaceObj.content == null) {
+      interfaceObj.content = "获取失败"
     }
-  }
-
-  // 回放
-  if (url == "/playback.xml") {
-
-    try {
-      // 读取文件内容
-      const data = readFileSync(process.cwd() + "/playback.xml");
-
-      // 设置响应头
-      res.setHeader('Content-Type', 'text/xml;charset=UTF-8');
-      res.statusCode = 200;
-      res.end(data); // 发送文件内容
-      loading = false
-      return
-    } catch (error) {
-      console.log(error)
-
-      res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-      res.end("访问异常")
-      printRed("回放文件响应异常")
-      loading = false
-      return
+    // 设置响应头
+    res.setHeader('Content-Type', interfaceObj.contentType);
+    if (url == "/m3u") {
+      res.setHeader('content-disposition', "inline; filename=\"interface.m3u\"");
     }
-
-  }
-
-  let urlSplit = url.split("/")[1]
-  let pid = urlSplit
-  let params = ""
-
-  if (urlSplit.match(/\?/)) {
-    // 回放
-    printGreen("处理传入参数")
-
-    const urlSplit1 = urlSplit.split("?")
-    pid = urlSplit1[0]
-    params = urlSplit1[1]
-  } else {
-    printGrey("无参数传入")
-  }
-
-  if (isNaN(pid)) {
-    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-    res.end("地址错误")
-    printRed("地址格式错误")
+    res.statusCode = 200;
+    res.end(interfaceObj.content); // 发送文件内容
     loading = false
     return
   }
 
-  printYellow("频道ID " + pid)
+  // 频道
+  const result = await channel(url, urlUserId, urlToken)
 
-  // 是否存在缓存
-  if (typeof urlCache[pid] === "object") {
-    const valTime = urlCache[pid].valTime - Date.now()
-    // 缓存是否有效
-    if (valTime >= 0) {
-      let playURL = urlCache[pid].url
-      let msg = "节目调整，暂不提供服务"
-      if (urlCache[pid].content != null) {
-        if (urlCache[pid].content.body.auth.logined) {
-          printGreen("登录认证成功")
-          if (urlCache[pid].content.body.auth.authResult == "FAIL") {
-            printRed(`认证失败 视频内容不完整 可能缺少相关VIP: ${urlCache[pid].content.body.auth.resultDesc}`)
-          }
-        } else {
-          printYellow("未登录")
-        }
-        msg = urlCache[pid].content.message
-      }
-      printGreen(`缓存有效，使用缓存数据`)
-      // 节目调整
-      if (playURL == "") {
-        printRed(`${pid} ${msg}`)
+  // 结果异常
+  if (result.code != 302) {
 
-        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-        res.end(msg)
-        loading = false
-        return
-      }
-
-      // 添加回放参数
-      if (params != "") {
-        const resultParams = new URLSearchParams(params);
-        for (const [key, value] of resultParams) {
-          playURL = `${playURL}&${key}=${value}`
-        }
-      }
-      res.writeHead(302, {
-        'Content-Type': 'application/json;charset=UTF-8',
-        location: playURL
-      });
-
-      res.end()
-      loading = false
-      return
-    }
-  }
-
-  let resObj = {}
-  try {
-    // 未登录请求720p
-    if (rateType >= 3 && (userId == "" || token == "")) {
-      resObj = await getAndroidURL720p(pid)
-    } else {
-      resObj = await getAndroidURL(userId, token, pid, rateType)
-    }
-  } catch (error) {
-    console.log(error)
-
-    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-    res.end("链接请求出错，请稍后重试")
-    printRed("链接请求出错")
+    printRed(result.desc)
+    res.writeHead(result.code, {
+      'Content-Type': 'application/json;charset=UTF-8',
+    });
+    res.end(result.desc)
     loading = false
     return
   }
-  printDebug(`添加加密字段后链接 ${resObj.url}`)
 
-  let changeFailed = false
-  if (resObj.url != "") {
-    let z = 1
-    while (z <= 6) {
-      if (z >= 2) {
-        printYellow(`获取失败,正在第${z - 1}次重试`)
-      }
-      const obj = await fetch(`${resObj.url}`, {
-        method: "GET",
-        redirect: "manual"
-      })
-
-      const location = obj.headers.get("Location")
-
-      if (location != "" && location != undefined && location != null) {
-        if (!location.startsWith("http://bofang")) {
-          resObj.url = location
-          break
-        }
-      }
-      if (z == 6) {
-        printYellow(`获取失败,返回原链接`)
-        changeFailed = true
-      } else {
-        await delay(150)
-      }
-      z++
-    }
-  }
-  if (resObj.content.body.auth.logined) {
-    printGreen("登录认证成功")
-    if (resObj.content.body.auth.authResult == "FAIL") {
-      printRed(`认证失败 视频内容不完整 可能缺少相关VIP: ${resObj.content.body.auth.resultDesc}`)
-    }
-  } else {
-    printYellow("未登录")
-  }
-  // printRed(resObj.url)
-  printGreen(`添加节目缓存 ${pid}`)
-  // 缓存有效时长
-  let addTime = 3 * 60 * 60 * 1000
-  // 节目调整时改为1分钟
-  if (resObj.url == "") {
-    addTime = 1 * 60 * 1000
-  }
-  // 尝试失败后原地址改为1小时
-  if (changeFailed) {
-    addTime = 1 * 60 * 60 * 1000
-  }
-  // 加入缓存
-  urlCache[pid] = {
-    // 有效期3小时 节目调整时改为1分钟
-    valTime: Date.now() + addTime,
-    url: resObj.url,
-    content: resObj.content,
-  }
-
-  if (resObj.url == "") {
-    let msg = "节目调整，暂不提供服务"
-    if (resObj.content != null) {
-      msg = resObj.content.message
-    }
-    printRed(`${pid} ${msg}`)
-
-    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" })
-    res.end(msg)
-    loading = false
-    return
-  }
-  let playURL = resObj.url
-
-  // 添加回放参数
-  if (params != "") {
-    const resultParams = new URLSearchParams(params);
-    for (const [key, value] of resultParams) {
-      playURL = `${playURL}&${key}=${value}`
-    }
-  }
-
-  printGreen("链接获取成功")
-
-  res.writeHead(302, {
+  res.writeHead(result.code, {
     'Content-Type': 'application/json;charset=UTF-8',
-    location: playURL
+    location: result.playURL
   });
 
   res.end()
@@ -291,11 +114,11 @@ const server = http.createServer(async (req, res) => {
 })
 
 server.listen(port, async () => {
-
-  // 设置定时器，3小时更新一次
+  const updateInterval = parseInt(programInfoUpdateInterval)
+  // 更新
   setInterval(async () => {
     printBlue(`准备更新文件 ${getDateTimeStr(new Date())}`)
-    hours += 6
+    hours += updateInterval
     try {
       await update(hours)
     } catch (error) {
@@ -304,7 +127,7 @@ server.listen(port, async () => {
     }
 
     printBlue(`当前已运行${hours}小时`)
-  }, 6 * 60 * 60 * 1000);
+  }, updateInterval * 60 * 60 * 1000);
 
   try {
     // 初始化数据
@@ -314,11 +137,10 @@ server.listen(port, async () => {
     printRed("更新失败")
   }
 
-  // printGreen("每3小时更新一次")
-
-  printGreen(`本地地址: http://localhost:${port}`)
+  printGreen(`本地地址: http://localhost:${port}${pass == "" ? "" : "/" + pass}`)
+  printGreen(`本程序完全免费，如果您是通过付费渠道获取，那么恭喜你成功被骗了`)
+  printGreen("开源地址: https://github.com/develop202/migu_video 欢迎issue 感谢star")
   if (host != "") {
-    printGreen(`自定义地址: ${host}`)
+    printGreen(`自定义地址: ${host}${pass == "" ? "" : "/" + pass}`)
   }
 })
-

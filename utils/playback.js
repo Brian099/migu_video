@@ -4,16 +4,16 @@ import { cntvNames } from "./datas.js"
 import { fetchUrl } from "./net.js"
 
 
-async function getPlaybackData(programId) {
-  const date = new Date()
+async function getPlaybackData(programId, timeout = 6000, githubAnd8) {
+  const date = new Date(Date.now() + githubAnd8)
   const today = getDateString(date)
-  const resp = await fetchUrl(`https://program-sc.miguvideo.com/live/v2/tv-programs-data/${programId}/${today}`)
+  const resp = await fetchUrl(`https://program-sc.miguvideo.com/live/v2/tv-programs-data/${programId}/${today}`, {}, timeout)
   return resp.body?.program[0]?.content
 }
 
-async function updatePlaybackDataByMigu(program, filePath) {
+async function updatePlaybackDataByMigu(program, filePath, timeout = 6000, githubAnd8 = 0) {
   // 今日节目数据
-  const playbackData = await getPlaybackData(program.pID)
+  const playbackData = await getPlaybackData(program.pID, timeout, githubAnd8)
   if (!playbackData) {
     return false
   }
@@ -30,7 +30,7 @@ async function updatePlaybackDataByMigu(program, filePath) {
     const contName = playbackData[i].contName.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 
     appendFileSync(filePath,
-      `    <programme channel="${program.name}" start="${getDateTimeString(new Date(playbackData[i].startTime))} +0800" stop="${getDateTimeString(new Date(playbackData[i].endTime))} +0800">\n` +
+      `    <programme channel="${program.name}" start="${getDateTimeString(new Date(playbackData[i].startTime + githubAnd8))} +0800" stop="${getDateTimeString(new Date(playbackData[i].endTime + githubAnd8))} +0800">\n` +
       `        <title lang="zh">${contName}</title>\n` +
       `    </programme>\n`
     )
@@ -38,12 +38,12 @@ async function updatePlaybackDataByMigu(program, filePath) {
   return true
 }
 
-async function updatePlaybackDataByCntv(program, filePath) {
+async function updatePlaybackDataByCntv(program, filePath, timeout = 6000, githubAnd8 = 0) {
   // 今日节目数据
-  const date = new Date()
+  const date = new Date(Date.now() + githubAnd8)
   const today = getDateString(date)
   const cntvName = cntvNames[program.name]
-  const resp = await fetchUrl(`https://api.cntv.cn/epg/epginfo3?serviceId=shiyi&d=${today}&c=${cntvName}`)
+  const resp = await fetchUrl(`https://api.cntv.cn/epg/epginfo3?serviceId=shiyi&d=${today}&c=${cntvName}`, {}, timeout)
 
   const playbackData = resp[cntvName]?.program
   if (!playbackData) {
@@ -62,7 +62,7 @@ async function updatePlaybackDataByCntv(program, filePath) {
     const contName = playbackData[i].t.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 
     appendFileSync(filePath,
-      `    <programme channel="${program.name}" start="${getDateTimeString(new Date(playbackData[i].st * 1000))} +0800" stop="${getDateTimeString(new Date(playbackData[i].et * 1000))} +0800">\n` +
+      `    <programme channel="${program.name}" start="${getDateTimeString(new Date(playbackData[i].st * 1000 + githubAnd8))} +0800" stop="${getDateTimeString(new Date(playbackData[i].et * 1000 + githubAnd8))} +0800">\n` +
       `        <title lang="zh">${contName}</title>\n` +
       `    </programme>\n`
     )
@@ -70,11 +70,11 @@ async function updatePlaybackDataByCntv(program, filePath) {
   return true
 }
 
-async function updatePlaybackData(program, filePath) {
+async function updatePlaybackData(program, filePath, timeout = 6000, githubAnd8 = 0) {
   if (cntvNames[program.name]) {
-    return updatePlaybackDataByCntv(program, filePath)
+    return updatePlaybackDataByCntv(program, filePath, timeout, githubAnd8)
   }
-  return updatePlaybackDataByMigu(program, filePath)
+  return updatePlaybackDataByMigu(program, filePath, timeout, githubAnd8)
 
 }
 export { updatePlaybackData }
