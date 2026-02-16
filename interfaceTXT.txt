@@ -8,6 +8,7 @@ CCTV3综艺,http://38.75.136.137:98/gslb/dsdqpub/cctv3hd.m3u8?auth=testpub
 CCTV5体育,http://74.91.26.218:82/live/cctv5hd.m3u8
 CCTV5体育,http://38.75.136.137:98/gslb/dsdqpub/cctv5hd.m3u8?auth=testpub
 CCTV6电影,http://74.91.26.218:82/live/cctv6hd.m3u8
+CCTV13新闻,http://pull-hls-f1.douyincdn.com/media/stream-695318149053022892/playlist.m3u8?arch_hrchy=w1&exp_hrchy=w1&keeptime=00093a80&major_anchor_level=common&t_id=037-202602161027575187CB1F118B8AF284EE-KJ6P3p&wsSecret=64456385336fc32adb45743a3d7c8b54&wsTime=699280ad
 CCTV16奥林匹克,http://74.91.26.218:82/live/cctv16hd.m3u8
 卫视频道,#genre#
 湖南卫视,http://74.91.26.218:82/live/hnwshd.m3u8
@@ -148,6 +149,8 @@ CCTV16奥林匹克,http://74.91.26.218:82/live/cctv16hd.m3u8
 济源综合,http://live.dxhmt.cn:9081/tv/19001-1.m3u8
 兰考综合,http://tvpull.dxhmt.cn:9081/tv/10225-1.m3u8
 兰考综合,http://live.dxhmt.cn:9081/tv/10225-1.m3u8
+洛阳科教,http://devlivepull.migucloud.com/live/A2HVH5BQ_C0.flv
+洛阳文旅,http://devlivepull.migucloud.com/live/Q081CD54_C0.flv
 伊川综合,http://tvpull.dxhmt.cn:9081/tv/10329-1.m3u8
 伊川综合,http://live.dxhmt.cn:9081/tv/10329-1.m3u8
 长垣综合,http://tvpull.dxhmt.cn:9081/tv/10728-1.m3u8
@@ -314,6 +317,7 @@ CCTV3超清,http://38.75.136.137:98/gslb/dsdqpub/cctv3hd.m3u8?auth=testpub
 CCTV5超清,http://74.91.26.218:82/live/cctv5hd.m3u8
 CCTV5超清,http://38.75.136.137:98/gslb/dsdqpub/cctv5hd.m3u8?auth=testpub
 CCTV6超清,http://74.91.26.218:82/live/cctv6hd.m3u8
+CCTV13超清,http://pull-hls-f1.douyincdn.com/media/stream-695318149053022892/playlist.m3u8?arch_hrchy=w1&exp_hrchy=w1&keeptime=00093a80&major_anchor_level=common&t_id=037-202602161027575187CB1F118B8AF284EE-KJ6P3p&wsSecret=64456385336fc32adb45743a3d7c8b54&wsTime=699280ad
 CCTV16超清,http://74.91.26.218:82/live/cctv16hd.m3u8
 湖南卫视超清,http://74.91.26.218:82/live/hnwshd.m3u8
 湖南卫视超清,http://38.75.136.137:98/gslb/dsdqpub/hnwshd.m3u8?auth=testpub
