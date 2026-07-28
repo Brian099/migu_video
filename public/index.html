@@ -628,6 +628,126 @@
       background: #fff;
       border-radius: 50%;
     }
+
+    /* 自定义多选下拉框 */
+    .custom-multiselect-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .multiselect-trigger {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      min-height: 45px;
+      box-sizing: border-box;
+    }
+
+    .multiselect-trigger .placeholder {
+      color: var(--text-muted);
+    }
+
+    .multiselect-trigger span:not(.placeholder) {
+      color: var(--text-main);
+    }
+
+    .multiselect-trigger .arrow {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: var(--text-muted);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+
+    .multiselect-trigger.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .multiselect-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: rgba(17, 24, 39, 0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-top: 5px;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dropdown-actions {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .dropdown-actions button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .dropdown-actions button:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .dropdown-list {
+      padding: 6px 0;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-main);
+      transition: background 0.15s;
+    }
+
+    .dropdown-item:hover {
+      background: rgba(124, 58, 237, 0.1);
+    }
+
+    .dropdown-item input[type="checkbox"] {
+      margin-right: 12px;
+      width: 15px;
+      height: 15px;
+      accent-color: var(--accent-color);
+      cursor: pointer;
+    }
+
+    .dropdown-item label {
+      cursor: pointer;
+      margin-bottom: 0 !important;
+      font-weight: 400 !important;
+      color: var(--text-main) !important;
+      flex-grow: 1;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
@@ -728,10 +848,24 @@
               <input type="password" id="accToken" class="form-control" required placeholder="网页抓包获取的 token">
             </div>
             <div class="form-group">
-              <label for="accGroup">默认频道分组 (该配置订阅内容)</label>
-              <select id="accGroup">
-                <option value="">全部频道 (不进行分组过滤)</option>
-              </select>
+              <label>默认频道分组 (该配置订阅内容)</label>
+              <div class="custom-multiselect-container">
+                <div class="multiselect-trigger form-control" id="groupSelectTrigger" onclick="toggleGroupDropdown(event)">
+                  <span id="selectedGroupsText" class="placeholder">全部频道 (不进行分组过滤)</span>
+                  <svg class="arrow" viewBox="0 0 24 24">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+                <div class="multiselect-dropdown" id="groupDropdown" style="display: none;">
+                  <div class="dropdown-actions">
+                    <button type="button" onclick="selectGroupsAction('all')">全选</button>
+                    <button type="button" onclick="selectGroupsAction('clear')">清空</button>
+                  </div>
+                  <div class="dropdown-list" id="groupDropdownList">
+                    <!-- 动态生成复选框 -->
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label for="accRate">默认画质 (清晰度)</label>
@@ -1018,6 +1152,7 @@
     function resetAccountForm() {
       document.getElementById("accountForm").reset();
       regenerateId();
+      setSelectedGroups("");
     }
 
     // 初始化配置探测
@@ -1100,7 +1235,10 @@
             <td><code>${escapeHtml(acc.userId)}</code></td>
             <td><span class="channel-group" style="margin-bottom:0;">${escapeHtml(rateTextMap[acc.rateType] || "默认")}</span></td>
             <td><span class="channel-group" style="margin-bottom:0; background:rgba(16,185,129,0.1); color:#34d399;">${escapeHtml(acc.group || "全部频道")}</span></td>
-            <td><button class="delete-action" onclick="handleDeleteAccount('${escapeHtml(acc.id)}')">删除</button></td>
+            <td>
+              <button class="edit-action" onclick="handleEditAccount('${escapeHtml(acc.id)}')" style="color: var(--accent-color); background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; margin-right: 8px;">编辑</button>
+              <button class="delete-action" onclick="handleDeleteAccount('${escapeHtml(acc.id)}')">删除</button>
+            </td>
           `;
           tbody.appendChild(tr);
 
@@ -1144,6 +1282,95 @@
       generateUrls();
     }
 
+    // 下拉多选相关交互逻辑
+    function toggleGroupDropdown(e) {
+      if (e) e.stopPropagation();
+      const dropdown = document.getElementById("groupDropdown");
+      const trigger = document.getElementById("groupSelectTrigger");
+      if (dropdown.style.display === "none") {
+        dropdown.style.display = "flex";
+        trigger.classList.add("open");
+      } else {
+        dropdown.style.display = "none";
+        trigger.classList.remove("open");
+      }
+    }
+
+    // 点击空白处关闭多选下拉框
+    document.addEventListener("click", (e) => {
+      const container = document.querySelector(".custom-multiselect-container");
+      if (container && !container.contains(e.target)) {
+        const dropdown = document.getElementById("groupDropdown");
+        const trigger = document.getElementById("groupSelectTrigger");
+        if (dropdown) {
+          dropdown.style.display = "none";
+          if (trigger) trigger.classList.remove("open");
+        }
+      }
+    });
+
+    function getSelectedGroups() {
+      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      const selected = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selected.push(cb.value);
+        }
+      });
+      return selected.join(",");
+    }
+
+    function setSelectedGroups(groupString) {
+      const selected = groupString ? groupString.split(",").map(s => s.trim()).filter(Boolean) : [];
+      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        cb.checked = selected.includes(cb.value);
+      });
+      updateSelectedGroupsText();
+    }
+
+    function updateSelectedGroupsText() {
+      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      const selected = [];
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selected.push(cb.value);
+        }
+      });
+      
+      const textEl = document.getElementById("selectedGroupsText");
+      if (selected.length === 0) {
+        textEl.innerText = "全部频道 (不进行分组过滤)";
+        textEl.classList.add("placeholder");
+      } else {
+        textEl.innerText = selected.join(", ");
+        textEl.classList.remove("placeholder");
+      }
+    }
+
+    function selectGroupsAction(action) {
+      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        cb.checked = (action === 'all');
+      });
+      updateSelectedGroupsText();
+    }
+
+    // 编辑已有配置方案
+    function handleEditAccount(id) {
+      const acc = accountsList.find(a => a.id === id);
+      if (!acc) return;
+      document.getElementById("accName").value = acc.name || "";
+      document.getElementById("accId").value = acc.id || "";
+      document.getElementById("accUserId").value = acc.userId || "";
+      document.getElementById("accToken").value = acc.token || "";
+      document.getElementById("accRate").value = acc.rateType || "";
+      setSelectedGroups(acc.group || "");
+      
+      // 滚回表单区域
+      document.getElementById("accountForm").scrollIntoView({ behavior: "smooth" });
+    }
+
     // 新增/修改配置映射
     async function handleAccountSubmit(e) {
       e.preventDefault();
@@ -1151,7 +1378,7 @@
       const id = document.getElementById("accId").value.trim();
       const userId = document.getElementById("accUserId").value.trim();
       const token = document.getElementById("accToken").value.trim();
-      const group = document.getElementById("accGroup").value;
+      const group = getSelectedGroups();
       const rateType = document.getElementById("accRate").value;
 
       if (!/^[a-zA-Z0-9_]+$/.test(id)) {
@@ -1198,21 +1425,37 @@
       }
     }
 
-    // 填充添加表单的分类下拉菜单
+    // 动态生成多选复选框列表
     function populateGroupSelectors() {
-      const accGroupSelect = document.getElementById("accGroup");
       const groups = new Set();
       channelsList.forEach(c => {
         if (c.group) groups.add(c.group);
       });
       
-      accGroupSelect.innerHTML = '<option value="">全部频道 (不进行分组过滤)</option>';
+      const dropdownList = document.getElementById("groupDropdownList");
+      if (!dropdownList) return;
+      
+      dropdownList.innerHTML = "";
       groups.forEach(g => {
-        const opt = document.createElement("option");
-        opt.value = g;
-        opt.innerText = g;
-        accGroupSelect.appendChild(opt);
+        const item = document.createElement("div");
+        item.className = "dropdown-item";
+        item.onclick = (e) => {
+          // 如果点击的是 checkbox 本身或 label 本身，则由其默认事件处理；否则手动反转 checkbox 并更新
+          if (e.target.tagName !== "INPUT" && e.target.tagName !== "LABEL") {
+            const cb = item.querySelector("input");
+            cb.checked = !cb.checked;
+            updateSelectedGroupsText();
+          }
+        };
+        
+        item.innerHTML = `
+          <input type="checkbox" value="${escapeHtml(g)}" id="cb_${escapeHtml(g)}" onchange="updateSelectedGroupsText()">
+          <label for="cb_${escapeHtml(g)}" onclick="event.stopPropagation()">${escapeHtml(g)}</label>
+        `;
+        dropdownList.appendChild(item);
       });
+      
+      setSelectedGroups("");
     }
 
     // 渲染频道列表卡片

@@ -94,6 +94,9 @@ function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
 
 // M3U 过滤辅助函数
 function filterM3UByGroup(content, targetGroup) {
+  const targetGroups = targetGroup.split(',').map(g => g.trim()).filter(Boolean);
+  if (targetGroups.length === 0) return content;
+
   const lines = content.split("\n");
   const resultLines = [lines[0]]; // 保留 #EXTM3U 头部
   for (let k = 1; k < lines.length; k++) {
@@ -101,7 +104,7 @@ function filterM3UByGroup(content, targetGroup) {
     if (line.startsWith("#EXTINF:")) {
       const groupMatch = line.match(/group-title="([^"]*)"/);
       const group = groupMatch ? groupMatch[1] : "";
-      if (group === targetGroup) {
+      if (targetGroups.includes(group)) {
         resultLines.push(line);
         if (k + 1 < lines.length) {
           resultLines.push(lines[k + 1]);
@@ -115,6 +118,9 @@ function filterM3UByGroup(content, targetGroup) {
 
 // TXT 过滤辅助函数
 function filterTXTByGroup(content, targetGroup) {
+  const targetGroups = targetGroup.split(',').map(g => g.trim()).filter(Boolean);
+  if (targetGroups.length === 0) return content;
+
   const lines = content.split("\n");
   const resultLines = [];
   let inGroup = false;
@@ -122,7 +128,7 @@ function filterTXTByGroup(content, targetGroup) {
     const trimmed = line.trim();
     if (trimmed.endsWith(",#genre#")) {
       const groupName = trimmed.substring(0, trimmed.length - 8);
-      if (groupName === targetGroup) {
+      if (targetGroups.includes(groupName)) {
         inGroup = true;
         resultLines.push(line);
       } else {
