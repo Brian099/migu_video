@@ -339,6 +339,8 @@ ${replace}/966423992
 ${replace}/966424024
 #EXTINF:-1 tvg-id="杰克·利索夫斯基VS张安达" tvg-name="斯诺克 杰克·利索夫斯基VS张安达 斯佳辉VS庞俊旭 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 杰克·利索夫斯基VS张安达 斯佳辉VS庞俊旭 09:30
 ${replace}/966197979
+#EXTINF:-1 tvg-id="杰克·利索夫斯基VS张安达" tvg-name="斯诺克 杰克·利索夫斯基VS张安达 秦正 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 杰克·利索夫斯基VS张安达 秦正 09:30
+${replace}/966384660
 #EXTINF:-1 tvg-id="斯佳辉VS庞俊旭" tvg-name="斯诺克 斯佳辉VS庞俊旭 陶哲铭 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 斯佳辉VS庞俊旭 陶哲铭 09:30
 ${replace}/966384662
 #EXTINF:-1 tvg-id="斯佳辉VS庞俊旭" tvg-name="斯诺克 斯佳辉VS庞俊旭 斯佳辉VS庞俊旭 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 斯佳辉VS庞俊旭 斯佳辉VS庞俊旭 09:30

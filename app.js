@@ -32,7 +32,7 @@ const server = http.createServer(async (req, res) => {
   // 身份认证
   if (pass != "") {
     // 排除前台静态页面、检测配置接口和本地台标静态资源，由前端页面和播放器直接拉取
-    if (url !== "/index.html" && url !== "/admin" && url !== "/api/config" && !url.startsWith("/channel_logo/")) {
+    if (url !== "/" && url !== "/index.html" && url !== "/admin" && url !== "/api/config" && !url.startsWith("/channel_logo/")) {
       const urlSplit = url.split("/")
       if (urlSplit[1] != pass) {
         printRed(`身份认证失败`)
@@ -88,7 +88,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 静态前台页面托管
-  if (url === "/index.html" || url === "/admin") {
+  if (url === "/" || url === "/index.html" || url === "/admin") {
     const fs = await import("node:fs");
     const path = await import("node:path");
     const filePath = path.join(process.cwd(), "public", "index.html");
@@ -381,7 +381,7 @@ const server = http.createServer(async (req, res) => {
     return
   }
 
-  const interfaceList = "/,/interface.txt,/m3u,/txt,/playback.xml"
+  const interfaceList = "/interface.txt,/m3u,/txt,/playback.xml"
 
   // 接口
   if (interfaceList.indexOf(url) !== -1) {
