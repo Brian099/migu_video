@@ -54,7 +54,16 @@ function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
   }
 
   // 2. 替换 Host 占位符
-  let replaceHost = `http://${headers.host}`
+  let proto = "http";
+  const forwardedProto = headers["x-forwarded-proto"];
+  if (forwardedProto) {
+    proto = forwardedProto.split(",")[0].trim();
+  } else if (headers["x-scheme"]) {
+    proto = headers["x-scheme"];
+  } else if (headers["x-forwarded-ssl"] === "on") {
+    proto = "https";
+  }
+  let replaceHost = `${proto}://${headers.host}`
 
   if (host != "" && (headers["x-real-ip"] || headers["x-forwarded-for"] || host.indexOf(headers.host) != -1)) {
     replaceHost = host
