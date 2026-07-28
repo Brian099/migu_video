@@ -242,7 +242,11 @@ const server = http.createServer(async (req, res) => {
   if (url === "/api/accounts" && method === "GET") {
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "accounts.json");
+    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
+    const accountsDir = path.dirname(accountsPath);
+    if (!fs.existsSync(accountsDir)) {
+      fs.mkdirSync(accountsDir, { recursive: true });
+    }
     let accounts = [];
     if (fs.existsSync(accountsPath)) {
       try {
@@ -261,7 +265,11 @@ const server = http.createServer(async (req, res) => {
   if (url === "/api/accounts" && method === "POST") {
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "accounts.json");
+    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
+    const accountsDir = path.dirname(accountsPath);
+    if (!fs.existsSync(accountsDir)) {
+      fs.mkdirSync(accountsDir, { recursive: true });
+    }
 
     let body = "";
     req.on("data", chunk => {
@@ -301,7 +309,11 @@ const server = http.createServer(async (req, res) => {
   if (url === "/api/accounts" && method === "DELETE") {
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "accounts.json");
+    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
+    const accountsDir = path.dirname(accountsPath);
+    if (!fs.existsSync(accountsDir)) {
+      fs.mkdirSync(accountsDir, { recursive: true });
+    }
 
     const query = new URL(req.url, "http://localhost").searchParams;
     const id = query.get("id");
@@ -378,7 +390,7 @@ const server = http.createServer(async (req, res) => {
     if (accountAlias) {
       const fs = await import("node:fs");
       const path = await import("node:path");
-      const accountsPath = path.join(process.cwd(), "accounts.json");
+      const accountsPath = path.join(process.cwd(), "data", "accounts.json");
       if (fs.existsSync(accountsPath)) {
         try {
           const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
@@ -418,7 +430,7 @@ const server = http.createServer(async (req, res) => {
   if (accountAlias) {
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "accounts.json");
+    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
     if (fs.existsSync(accountsPath)) {
       try {
         const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));

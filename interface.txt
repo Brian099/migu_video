@@ -319,13 +319,13 @@ ${replace}/966432794
 ${replace}/966433211
 #EXTINF:-1 tvg-id="龙泉55-63云和" tvg-name="浙BA 龙泉55-63云和 2026浙江省城市篮球联赛全场回放：龙泉VS云和（赛场原声） 19:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/7/16/1000000012931063812e.png" group-title="体育-昨天07-27",浙BA 龙泉55-63云和 2026浙江省城市篮球联赛全场回放：龙泉VS云和（赛场原声） 19:30
 ${replace}/966432929
-#EXTINF:-1 tvg-id="费尔南德斯横扫 萨姆索诺娃逆转晋级" tvg-name="WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（赛场原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（赛场原声） 23:00
+#EXTINF:-1 tvg-id="费尔南德斯晋级 萨姆索诺娃逆转凯斯" tvg-name="WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（赛场原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（赛场原声） 23:00
 ${replace}/966436313
-#EXTINF:-1 tvg-id="费尔南德斯横扫 萨姆索诺娃逆转晋级" tvg-name="WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（英文原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（英文原声） 23:00
+#EXTINF:-1 tvg-id="费尔南德斯晋级 萨姆索诺娃逆转凯斯" tvg-name="WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（英文原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 2026WTA500华盛顿站女单第1轮回放：萨姆索诺娃2-1凯斯（英文原声） 23:00
 ${replace}/966436007
-#EXTINF:-1 tvg-id="费尔南德斯横扫 萨姆索诺娃逆转晋级" tvg-name="WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 【回放】费尔南德斯2-0里纳特（赛场原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 【回放】费尔南德斯2-0里纳特（赛场原声） 23:00
+#EXTINF:-1 tvg-id="费尔南德斯晋级 萨姆索诺娃逆转凯斯" tvg-name="WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 【回放】费尔南德斯2-0里纳特（赛场原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 【回放】费尔南德斯2-0里纳特（赛场原声） 23:00
 ${replace}/966434635
-#EXTINF:-1 tvg-id="费尔南德斯横扫 萨姆索诺娃逆转晋级" tvg-name="WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 【回放】费尔南德斯2-0里纳特（英文原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯横扫 萨姆索诺娃逆转晋级 【回放】费尔南德斯2-0里纳特（英文原声） 23:00
+#EXTINF:-1 tvg-id="费尔南德斯晋级 萨姆索诺娃逆转凯斯" tvg-name="WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 【回放】费尔南德斯2-0里纳特（英文原声） 23:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2025/3/7/1000000012341069e1a8.jpg" group-title="体育-今天07-28",WTA 费尔南德斯晋级 萨姆索诺娃逆转凯斯 【回放】费尔南德斯2-0里纳特（英文原声） 23:00
 ${replace}/966434543
 #EXTINF:-1 tvg-id="中国自行车运动超级赛暨中国竞速小轮车联赛" tvg-name="中国自行车运动协会系列赛 中国自行车运动超级赛暨中国竞速小轮车联赛 解说 08:40" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2026/6/25/100000001499106b6db1.png" group-title="体育-今天07-28",中国自行车运动协会系列赛 中国自行车运动超级赛暨中国竞速小轮车联赛 解说 08:40
 ${replace}/966338049
@@ -337,10 +337,6 @@ ${replace}/966423978
 ${replace}/966423992
 #EXTINF:-1 tvg-id="中国台北混双头号种子压阵出场" tvg-name="BWF 中国台北混双头号种子压阵出场 4号场地 09:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2023/5/25/100000001055106085dd.png" group-title="体育-今天07-28",BWF 中国台北混双头号种子压阵出场 4号场地 09:00
 ${replace}/966424024
-#EXTINF:-1 tvg-id="杰克·利索夫斯基VS张安达" tvg-name="斯诺克 杰克·利索夫斯基VS张安达 秦正 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 杰克·利索夫斯基VS张安达 秦正 09:30
-${replace}/966384660
-#EXTINF:-1 tvg-id="杰克·利索夫斯基VS张安达" tvg-name="斯诺克 杰克·利索夫斯基VS张安达 利索夫斯基VS张安达 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 杰克·利索夫斯基VS张安达 利索夫斯基VS张安达 09:30
-${replace}/966197942
 #EXTINF:-1 tvg-id="杰克·利索夫斯基VS张安达" tvg-name="斯诺克 杰克·利索夫斯基VS张安达 斯佳辉VS庞俊旭 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 杰克·利索夫斯基VS张安达 斯佳辉VS庞俊旭 09:30
 ${replace}/966197979
 #EXTINF:-1 tvg-id="斯佳辉VS庞俊旭" tvg-name="斯诺克 斯佳辉VS庞俊旭 陶哲铭 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 斯佳辉VS庞俊旭 陶哲铭 09:30
@@ -349,8 +345,10 @@ ${replace}/966384662
 ${replace}/966197979
 #EXTINF:-1 tvg-id="斯佳辉VS庞俊旭" tvg-name="斯诺克 斯佳辉VS庞俊旭 利索夫斯基VS张安达 09:30" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 斯佳辉VS庞俊旭 利索夫斯基VS张安达 09:30
 ${replace}/966197942
-#EXTINF:-1 tvg-id="陕西榆林天泽vs武汉盛帆黄鹤" tvg-name="全国女子篮球锦标赛 陕西榆林天泽vs武汉盛帆黄鹤 清流播出 09:55" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2026/7/13/10000000109310670724.png" group-title="体育-今天07-28",全国女子篮球锦标赛 陕西榆林天泽vs武汉盛帆黄鹤 清流播出 09:55
-${replace}/966167662
+#EXTINF:-1 tvg-id="陕西榆林天泽vs武汉盛帆黄鹤" tvg-name="全国女子篮球锦标赛 陕西榆林天泽vs武汉盛帆黄鹤 2026全国女子篮球锦标赛淄博赛区全场回放：陕西榆林天泽vs武汉盛帆黄鹤（赛场原声） 09:55" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2026/7/13/10000000109310670724.png" group-title="体育-今天07-28",全国女子篮球锦标赛 陕西榆林天泽vs武汉盛帆黄鹤 2026全国女子篮球锦标赛淄博赛区全场回放：陕西榆林天泽vs武汉盛帆黄鹤（赛场原声） 09:55
+${replace}/966438988
+#EXTINF:-1 tvg-id="2026年CBA选秀大会 宋昕澔当选状元" tvg-name="CBA 2026年CBA选秀大会 宋昕澔当选状元 全场回放 09:50" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2020/1/8/5a49fc90-e34e-4dfd-9556-3e3895a3fd78.png" group-title="体育-今天07-28",CBA 2026年CBA选秀大会 宋昕澔当选状元 全场回放 09:50
+${replace}/966438466
 #EXTINF:-1 tvg-id="尼尔·罗伯逊VS肖国栋" tvg-name="斯诺克 尼尔·罗伯逊VS肖国栋 陶哲铭 14:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 尼尔·罗伯逊VS肖国栋 陶哲铭 14:00
 ${replace}/966384670
 #EXTINF:-1 tvg-id="尼尔·罗伯逊VS肖国栋" tvg-name="斯诺克 尼尔·罗伯逊VS肖国栋 1号桌 14:00" tvg-logo="https://img.cmvideo.cn/sports/uploadImages/2024/1/16/100000001001106678f6.jpg" group-title="体育-今天07-28",斯诺克 尼尔·罗伯逊VS肖国栋 1号桌 14:00
