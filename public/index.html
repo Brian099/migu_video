@@ -549,6 +549,85 @@
       background: rgba(239, 68, 68, 0.95);
       box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
     }
+
+    /* 配置选项卡式选择 */
+    .config-options-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 15px;
+      margin-top: 8px;
+    }
+
+    .config-option-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .config-option-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(124, 58, 237, 0.4);
+    }
+
+    .config-option-card.active {
+      background: rgba(124, 58, 237, 0.12);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .config-option-card .option-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .config-option-card .option-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .config-option-card.active .option-title {
+      color: #a78bfa;
+    }
+
+    .config-option-card .radio-indicator {
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid var(--text-muted);
+      border-radius: 50%;
+      display: inline-block;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .config-option-card.active .radio-indicator {
+      border-color: var(--accent-color);
+      background: var(--accent-color);
+    }
+
+    .config-option-card.active .radio-indicator::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      background: #fff;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
@@ -579,10 +658,9 @@
         </h2>
         <div class="row" style="grid-template-columns: 1fr;">
           <div class="form-group">
-            <label for="subAccount">选择配置方案</label>
-            <select id="subAccount" onchange="generateUrls()">
-              <option value="">默认配置 (使用服务器环境变量)</option>
-            </select>
+            <label>选择配置方案</label>
+            <input type="hidden" id="subAccount" value="">
+            <div id="subAccountOptions" class="config-options-container"></div>
           </div>
         </div>
         <div class="form-group" style="margin-top: 10px;">
@@ -994,10 +1072,24 @@
         const tbody = document.querySelector("#accountsTable tbody");
         tbody.innerHTML = "";
         
-        // 渲染下拉选择器
-        const select = document.getElementById("subAccount");
-        // 保留第一项默认
-        select.innerHTML = '<option value="">默认配置 (使用服务器环境变量)</option>';
+        // 渲染配置选择器卡片
+        const container = document.getElementById("subAccountOptions");
+        const currentValue = document.getElementById("subAccount").value;
+        container.innerHTML = "";
+
+        // 1. 默认配置 card
+        const defaultCard = document.createElement("div");
+        defaultCard.className = "config-option-card";
+        defaultCard.setAttribute("data-value", "");
+        defaultCard.onclick = () => selectConfigOption("");
+        defaultCard.innerHTML = `
+          <div class="option-title">
+            <span>默认配置</span>
+            <span class="radio-indicator"></span>
+          </div>
+          <div class="option-subtitle">使用服务器环境变量</div>
+        `;
+        container.appendChild(defaultCard);
 
         accountsList.forEach(acc => {
           // 渲染表格
@@ -1012,15 +1104,44 @@
           `;
           tbody.appendChild(tr);
 
-          // 渲染下拉框
-          const opt = document.createElement("option");
-          opt.value = acc.id;
-          opt.innerText = `${acc.name} (${acc.id})`;
-          select.appendChild(opt);
+          // 渲染配置卡片
+          const card = document.createElement("div");
+          card.className = "config-option-card";
+          card.setAttribute("data-value", acc.id);
+          card.onclick = () => selectConfigOption(acc.id);
+          card.innerHTML = `
+            <div class="option-title">
+              <span>${escapeHtml(acc.name)}</span>
+              <span class="radio-indicator"></span>
+            </div>
+            <div class="option-subtitle">订阅代号: ${escapeHtml(acc.id)}</div>
+          `;
+          container.appendChild(card);
         });
+
+        // 校验并选中当前值
+        let validValue = currentValue === "";
+        if (!validValue) {
+          validValue = accountsList.some(acc => acc.id === currentValue);
+        }
+        const targetValue = validValue ? currentValue : "";
+        selectConfigOption(targetValue);
       } catch (e) {
         console.error("获取账号列表失败", e);
       }
+    }
+
+    // 选中配置方案
+    function selectConfigOption(value) {
+      document.getElementById("subAccount").value = value;
+      document.querySelectorAll("#subAccountOptions .config-option-card").forEach(card => {
+        if (card.getAttribute("data-value") === value) {
+          card.classList.add("active");
+        } else {
+          card.classList.remove("active");
+        }
+      });
+      generateUrls();
     }
 
     // 新增/修改配置映射
