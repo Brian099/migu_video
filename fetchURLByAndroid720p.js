@@ -3,6 +3,7 @@ import { getAndroidURL720p } from "./utils/androidURL.js"
 import { appendFile, appendFileSync, renameFileSync, writeFile } from "./utils/fileUtil.js"
 import { updatePlaybackData } from "./utils/playback.js"
 import { printBlue, printGreen, printRed, printYellow } from "./utils/colorOut.js"
+import { getLogoUrl } from "./utils/logoUtil.js"
 
 async function fetchURLByAndroid720p() {
 
@@ -74,7 +75,7 @@ async function fetchURLByAndroid720p() {
         continue
       }
       // 写入节目
-      appendFile(path, `#EXTINF:-1 tvg-id="${data[j].name}" tvg-name="${data[j].name}" tvg-logo="${data[j].pics.highResolutionH}" group-title="${datas[i].name}",${data[j].name}\n${resObj.url}\n`)
+      appendFile(path, `#EXTINF:-1 tvg-id="${data[j].name}" tvg-name="${data[j].name}" tvg-logo="${getLogoUrl(data[j].name, data[j].pics.highResolutionH)}" group-title="${datas[i].name}",${data[j].name}\n${resObj.url}\n`)
       printGreen(`${data[j].name} 更新成功！`)
     }
   }

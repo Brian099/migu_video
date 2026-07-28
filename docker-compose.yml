@@ -1,0 +1,21 @@
+services:
+  migu-video:
+    build: .
+    image: brian9909/migu_video:latest
+    container_name: migu_video
+    restart: always
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./channel_logo:/migu/channel_logo
+      - ./accounts.json:/migu/accounts.json
+    environment:
+      - TZ=Asia/Shanghai
+      - mport=1234
+      - mpass=CHANGEME_YOUR_PASSWORD # 强烈建议配置访问/后台登录密码，防止未授权访问
+      # - muserId=YOUR_DEFAULT_USERID
+      # - mtoken=YOUR_DEFAULT_TOKEN
+      # - mhost=http://your-public-ip:1234
+      # - mrateType=3
+      # - mupdateInterval=6
+      # - mignoreCategory=PE

@@ -6,6 +6,7 @@ import refreshToken from "./refreshToken.js"
 import { printGreen, printRed, printYellow } from "./colorOut.js"
 import { getDateString } from "./time.js"
 import { fetchUrl } from "./net.js"
+import { getLogoUrl } from "./logoUtil.js"
 
 // 忽略分类列表
 const ignoreCategorySet = new Set()
@@ -56,7 +57,7 @@ async function updateTV(_hours) {
       await updatePlaybackData(data[j], playbackFile)
 
       // 写入节目
-      appendFile(interfacePath, `#EXTINF:-1 tvg-id="${data[j].name}" tvg-name="${data[j].name}" tvg-logo="${data[j].pics.highResolutionH}" group-title="${datas[i].name}",${data[j].name}\n\${replace}/${data[j].pID}\n`)
+      appendFile(interfacePath, `#EXTINF:-1 tvg-id="${data[j].name}" tvg-name="${data[j].name}" tvg-logo="${getLogoUrl(data[j].name, data[j].pics.highResolutionH)}" group-title="${datas[i].name}",${data[j].name}\n\${replace}/${data[j].pID}\n`)
       // txt
       appendFile(interfaceTXTPath, `${data[j].name},\${replace}/${data[j].pID}\n`)
       // printGreen(`    节目链接更新成功`)
@@ -153,7 +154,7 @@ async function updatePE(_hours) {
               }
               const competitionDesc = `${data.competitionName} ${pkInfoTitle} ${replay.name} ${timeStr}`
               // 写入赛事
-              appendFileSync(interfacePath, `#EXTINF:-1 tvg-id="${pkInfoTitle}" tvg-name="${competitionDesc}" tvg-logo="${data.competitionLogo}" group-title="体育-${relativeDate}",${competitionDesc}\n\${replace}/${replay.pID}\n`)
+              appendFileSync(interfacePath, `#EXTINF:-1 tvg-id="${pkInfoTitle}" tvg-name="${competitionDesc}" tvg-logo="${getLogoUrl(data.competitionName, data.competitionLogo)}" group-title="体育-${relativeDate}",${competitionDesc}\n\${replace}/${replay.pID}\n`)
               appendFileSync(interfaceTXTPath, `${competitionDesc},\${replace}/${replay.pID}\n`)
             }
           }
@@ -167,7 +168,7 @@ async function updatePE(_hours) {
           }
           const competitionDesc = `${data.competitionName} ${pkInfoTitle} ${live.name} ${live.startTimeStr.substring(11, 16)}`
           // 写入赛事
-          appendFileSync(interfacePath, `#EXTINF:-1 tvg-id="${pkInfoTitle}" tvg-name="${competitionDesc}" tvg-logo="${data.competitionLogo}" group-title="体育-${relativeDate}",${competitionDesc}\n\${replace}/${live.pID}\n`)
+          appendFileSync(interfacePath, `#EXTINF:-1 tvg-id="${pkInfoTitle}" tvg-name="${competitionDesc}" tvg-logo="${getLogoUrl(data.competitionName, data.competitionLogo)}" group-title="体育-${relativeDate}",${competitionDesc}\n\${replace}/${live.pID}\n`)
           appendFileSync(interfaceTXTPath, `${competitionDesc},\${replace}/${live.pID}\n`)
         }
       } catch (error) {

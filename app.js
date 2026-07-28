@@ -20,24 +20,315 @@ const server = http.createServer(async (req, res) => {
 
   // 获取请求方法、URL 和请求头
   let { method, url, headers } = req;
+
+  // 剥离 URL 中的 Query 参数
+  let searchParams = new URLSearchParams();
+  const queryIndex = url.indexOf("?");
+  if (queryIndex !== -1) {
+    searchParams = new URLSearchParams(url.substring(queryIndex + 1));
+    url = url.substring(0, queryIndex);
+  }
+
   // 身份认证
   if (pass != "") {
-    const urlSplit = url.split("/")
-    if (urlSplit[1] != pass) {
-      printRed(`身份认证失败`)
-      res.writeHead(200, { 'Content-Type': 'application/json;charset=UTF-8' });
-      res.end(`身份认证失败`); // 发送文件内容
-      loading = false
-      return
-    } else {
-      printGreen("身份认证成功")
-      // 有密码且传入用户信息
-      if (urlSplit.length > 3) {
-        url = url.substring(pass.length + 1)
+    // 排除前台静态页面、检测配置接口和本地台标静态资源，由前端页面和播放器直接拉取
+    if (url !== "/index.html" && url !== "/admin" && url !== "/api/config" && !url.startsWith("/channel_logo/")) {
+      const urlSplit = url.split("/")
+      if (urlSplit[1] != pass) {
+        printRed(`身份认证失败`)
+        res.writeHead(200, { 'Content-Type': 'application/json;charset=UTF-8' });
+        res.end(`身份认证失败`); // 发送文件内容
+        loading = false
+        return
       } else {
-        url = urlSplit.length == 2 ? "/" : "/" + urlSplit[urlSplit.length - 1]
+        printGreen("身份认证成功")
+        // 有密码且传入用户信息
+        if (urlSplit.length > 3) {
+          url = url.substring(pass.length + 1)
+        } else {
+          url = urlSplit.length == 2 ? "/" : "/" + urlSplit[urlSplit.length - 1]
+        }
       }
     }
+  }
+
+  // 静态台标文件服务
+  const logoIndex = url.indexOf("/channel_logo/");
+  if (logoIndex !== -1) {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const filename = path.basename(decodeURIComponent(url.substring(logoIndex + 14)));
+    const filePath = path.join(process.cwd(), "channel_logo", filename);
+
+    if (fs.existsSync(filePath)) {
+      const ext = path.extname(filename).toLowerCase();
+      let contentType = "image/png";
+      if (ext === ".jpg" || ext === ".jpeg") {
+        contentType = "image/jpeg";
+      } else if (ext === ".webp") {
+        contentType = "image/webp";
+      }
+      
+      try {
+        const fileContent = fs.readFileSync(filePath);
+        res.writeHead(200, { "Content-Type": contentType });
+        res.end(fileContent);
+        loading = false;
+        return;
+      } catch (err) {
+        printRed(`读取台标文件失败: ${filename}`);
+        console.error(err);
+      }
+    }
+    
+    res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8" });
+    res.end("台标文件不存在");
+    loading = false;
+    return;
+  }
+
+  // 静态前台页面托管
+  if (url === "/index.html" || url === "/admin") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const filePath = path.join(process.cwd(), "public", "index.html");
+    if (fs.existsSync(filePath)) {
+      res.writeHead(200, { "Content-Type": "text/html;charset=UTF-8" });
+      res.end(fs.readFileSync(filePath));
+    } else {
+      res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8" });
+      res.end("index.html 文件未找到，请检查项目目录结构");
+    }
+    loading = false;
+    return;
+  }
+
+  // 配置探测 API (免密)
+  if (url === "/api/config" && method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify({ needsPass: pass !== "" }));
+    loading = false;
+    return;
+  }
+
+  // 1. 获取频道数据 API
+  if (url === "/api/channels" && method === "GET") {
+    const fs = await import("node:fs");
+    const filePath = `${process.cwd()}/interface.txt`;
+    let channels = [];
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, "utf-8");
+      const lines = content.split("\n");
+      let currentChannel = null;
+      for (let line of lines) {
+        line = line.trim();
+        if (line.startsWith("#EXTINF:")) {
+          const nameMatch = line.match(/,(.+)$/);
+          const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+          const groupMatch = line.match(/group-title="([^"]*)"/);
+          currentChannel = {
+            name: nameMatch ? nameMatch[1].trim() : "未知频道",
+            logo: logoMatch ? logoMatch[1] : "",
+            group: groupMatch ? groupMatch[1] : "其他"
+          };
+        } else if (line && !line.startsWith("#")) {
+          if (currentChannel) {
+            const idMatch = line.match(/\/([^/?]+)($|\?)/);
+            currentChannel.id = idMatch ? idMatch[1] : "";
+            currentChannel.playUrl = line;
+            channels.push(currentChannel);
+            currentChannel = null;
+          }
+        }
+      }
+    }
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify(channels));
+    loading = false;
+    return;
+  }
+
+  // 2. 获取本地台标列表 API
+  if (url === "/api/logos" && method === "GET") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const logoDir = path.join(process.cwd(), "channel_logo");
+    let logos = [];
+    if (fs.existsSync(logoDir)) {
+      logos = fs.readdirSync(logoDir).filter(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ext === ".png" || ext === ".jpg" || ext === ".jpeg" || ext === ".webp";
+      });
+    }
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify(logos));
+    loading = false;
+    return;
+  }
+
+  // 3. 上传台标 API
+  if (url === "/api/upload-logo" && method === "POST") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { clearLogoCache } = await import("./utils/logoUtil.js");
+
+    const rawFilename = req.headers["x-filename"];
+    if (!rawFilename) {
+      res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "请求头中缺少 x-filename" }));
+      loading = false;
+      return;
+    }
+
+    const filename = path.basename(decodeURIComponent(rawFilename));
+    const targetPath = path.join(process.cwd(), "channel_logo", filename);
+    const writeStream = fs.createWriteStream(targetPath);
+    req.pipe(writeStream);
+
+    writeStream.on("finish", () => {
+      clearLogoCache();
+      res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ success: true, filename }));
+    });
+
+    writeStream.on("error", (err) => {
+      console.error("写入文件失败", err);
+      res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "上传台标失败" }));
+    });
+    loading = false;
+    return;
+  }
+
+  // 4. 删除台标 API
+  if (url === "/api/delete-logo" && method === "DELETE") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { clearLogoCache } = await import("./utils/logoUtil.js");
+
+    const query = new URL(req.url, "http://localhost").searchParams;
+    const filename = query.get("name");
+
+    if (!filename) {
+      res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "未指定删除的台标名称" }));
+      loading = false;
+      return;
+    }
+
+    const safeFilename = path.basename(filename);
+    const targetPath = path.join(process.cwd(), "channel_logo", safeFilename);
+
+    if (fs.existsSync(targetPath)) {
+      try {
+        fs.unlinkSync(targetPath);
+        clearLogoCache();
+        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        console.error("删除文件失败", err);
+        res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ error: "删除台标失败" }));
+      }
+    } else {
+      res.writeHead(404, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "台标文件不存在" }));
+    }
+    loading = false;
+    return;
+  }
+
+  // 5. 获取账号代号 API
+  if (url === "/api/accounts" && method === "GET") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const accountsPath = path.join(process.cwd(), "accounts.json");
+    let accounts = [];
+    if (fs.existsSync(accountsPath)) {
+      try {
+        accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify(accounts));
+    loading = false;
+    return;
+  }
+
+  // 6. 添加/修改账号代号 API
+  if (url === "/api/accounts" && method === "POST") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const accountsPath = path.join(process.cwd(), "accounts.json");
+
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const newAccount = JSON.parse(body);
+        if (!newAccount.id || !newAccount.name || !newAccount.userId || !newAccount.token) {
+          res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+          res.end(JSON.stringify({ error: "配置ID/配置名称/用户ID/Token缺失" }));
+          return;
+        }
+
+        let accounts = [];
+        if (fs.existsSync(accountsPath)) {
+          accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
+        }
+
+        accounts = accounts.filter(a => a.id !== newAccount.id);
+        accounts.push(newAccount);
+
+        fs.writeFileSync(accountsPath, JSON.stringify(accounts, null, 2), "utf-8");
+        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ success: true, account: newAccount }));
+      } catch (err) {
+        console.error("保存账号配置失败，错误为:", err, "收到的Body为:", body);
+        res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ error: "保存失败" }));
+      }
+    });
+    loading = false;
+    return;
+  }
+
+  // 7. 删除账号代号 API
+  if (url === "/api/accounts" && method === "DELETE") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const accountsPath = path.join(process.cwd(), "accounts.json");
+
+    const query = new URL(req.url, "http://localhost").searchParams;
+    const id = query.get("id");
+    if (!id) {
+      res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "未指定删除的配置ID" }));
+      loading = false;
+      return;
+    }
+
+    if (fs.existsSync(accountsPath)) {
+      try {
+        let accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
+        accounts = accounts.filter(a => a.id !== id);
+        fs.writeFileSync(accountsPath, JSON.stringify(accounts, null, 2), "utf-8");
+        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ error: "删除失败" }));
+      }
+    } else {
+      res.writeHead(404, { "Content-Type": "application/json;charset=UTF-8" });
+      res.end(JSON.stringify({ error: "账号文件不存在" }));
+    }
+    loading = false;
+    return;
   }
 
   let urlToken = ""
@@ -82,7 +373,29 @@ const server = http.createServer(async (req, res) => {
 
   // 接口
   if (interfaceList.indexOf(url) !== -1) {
-    const interfaceObj = interfaceStr(url, headers, urlUserId, urlToken)
+    let activeSearchParams = searchParams;
+    const accountAlias = searchParams.get("account");
+    if (accountAlias) {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const accountsPath = path.join(process.cwd(), "accounts.json");
+      if (fs.existsSync(accountsPath)) {
+        try {
+          const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
+          const config = accounts.find(a => a.id === accountAlias);
+          if (config) {
+            activeSearchParams = new URLSearchParams();
+            activeSearchParams.set("account", accountAlias);
+            if (config.group) activeSearchParams.set("group", config.group);
+            if (config.rateType) activeSearchParams.set("rateType", config.rateType);
+          }
+        } catch (e) {
+          console.error("读取 accounts.json 失败", e);
+        }
+      }
+    }
+
+    const interfaceObj = interfaceStr(url, headers, urlUserId, urlToken, activeSearchParams)
     if (interfaceObj.content == null) {
       interfaceObj.content = "获取失败"
     }
@@ -93,12 +406,38 @@ const server = http.createServer(async (req, res) => {
     }
     res.statusCode = 200;
     res.end(interfaceObj.content); // 发送文件内容
-    loading = false
-    return
+    loading = false;
+    return;
+  }
+
+  let activeUserId = urlUserId;
+  let activeToken = urlToken;
+  let activeRateType = searchParams.get("rateType"); // 优先读取 URL 传递的画质
+
+  const accountAlias = searchParams.get("account");
+  if (accountAlias) {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const accountsPath = path.join(process.cwd(), "accounts.json");
+    if (fs.existsSync(accountsPath)) {
+      try {
+        const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
+        const config = accounts.find(a => a.id === accountAlias);
+        if (config) {
+          activeUserId = config.userId;
+          activeToken = config.token;
+          if (config.rateType && !activeRateType) {
+            activeRateType = config.rateType;
+          }
+        }
+      } catch (e) {
+        console.error("读取 accounts.json 失败", e);
+      }
+    }
   }
 
   // 频道
-  const result = await channel(url, urlUserId, urlToken)
+  const result = await channel(url, activeUserId, activeToken, activeRateType)
 
   // 结果异常
   if (result.code != 302) {
@@ -108,8 +447,8 @@ const server = http.createServer(async (req, res) => {
       'Content-Type': 'application/json;charset=UTF-8',
     });
     res.end(result.desc)
-    loading = false
-    return
+    loading = false;
+    return;
   }
 
   res.writeHead(result.code, {
@@ -119,7 +458,7 @@ const server = http.createServer(async (req, res) => {
 
   res.end()
 
-  loading = false
+  loading = false;
 })
 
 server.listen(port, async () => {

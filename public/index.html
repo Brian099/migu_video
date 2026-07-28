@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>咪咕视频订阅管理中心</title>
+  <!-- 引入现代字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --panel-bg: rgba(17, 24, 39, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent-color: #7c3aed;
+      --accent-glow: rgba(124, 58, 237, 0.35);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* 背景微光渐变效果 */
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* 容器布局 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* 头部设计 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #a78bfa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .logout-btn {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    /* 选项卡导航 */
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* 选项卡面板 */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 玻璃卡片 */
+    .card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 表单组件 */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-control, select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* 复制区域 */
+    .copy-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      gap: 15px;
+    }
+
+    .copy-text {
+      font-family: monospace;
+      font-size: 13px;
+      color: #34d399;
+      word-break: break-all;
+      flex-grow: 1;
+    }
+
+    .copy-btn, .action-btn {
+      background: var(--accent-color);
+      border: none;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover, .action-btn:hover {
+      background: #6d28d9;
+    }
+
+    .copy-btn.copied {
+      background: var(--success);
+    }
+
+    /* 表格 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    td {
+      color: var(--text-main);
+    }
+
+    .delete-action {
+      color: var(--danger);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .delete-action:hover {
+      text-decoration: underline;
+    }
+
+    /* 频道列表与上传 */
+    .channel-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .channel-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-bar {
+      margin-bottom: 20px;
+    }
+
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    /* 自定义滚动条 */
+    .channel-grid::-webkit-scrollbar, .logo-list-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .channel-grid::-webkit-scrollbar-thumb, .logo-list-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .channel-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .channel-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    .logo-preview-box {
+      width: 70px;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .logo-preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .logo-missing {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 5px;
+    }
+
+    .channel-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .channel-group {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .upload-btn-wrap {
+      width: 100%;
+      position: relative;
+    }
+
+    .upload-file-input {
+      display: none;
+    }
+
+    .upload-trigger-btn {
+      width: 100%;
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      color: #a78bfa;
+      padding: 6px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .upload-trigger-btn:hover {
+      background: var(--accent-color);
+      color: #fff;
+    }
+
+    /* 拖拽上传区域 */
+    .dropzone {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.01);
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+      margin-bottom: 25px;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent-color);
+      background: rgba(124, 58, 237, 0.04);
+    }
+
+    .dropzone p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .logo-list-scroll {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .logo-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo-list-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-thumb {
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo-thumb img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* 弹出登录框 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-content h3 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      background: linear-gradient(to right, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-content p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      background: var(--accent-color);
+      border: none;
+      color: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .modal-btn:hover {
+      background: #6d28d9;
+    }
+    
+    .toast-msg {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(50px);
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 10000;
+      box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .toast-msg.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast-msg.error {
+      background: rgba(239, 68, 68, 0.95);
+      box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>咪咕视频订阅管理中心</h1>
+        <p>配置控制中心，本地台标管理 & 静态托管后台</p>
+      </div>
+      <button class="logout-btn" id="logoutBtn" style="display:none;">退出登录</button>
+    </header>
+
+    <!-- 选项卡按钮 -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('subTab', this)">订阅管理</button>
+      <button class="tab-btn" onclick="switchTab('accTab', this)">配置管理</button>
+      <button class="tab-btn" onclick="switchTab('chanTab', this)">频道与台标</button>
+    </div>
+
+    <!-- 选项卡内容 -->
+    <!-- 1. 订阅管理 -->
+    <div id="subTab" class="tab-panel active">
+      <div class="card">
+        <h2>
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          极简订阅地址生成器
+        </h2>
+        <div class="row" style="grid-template-columns: 1fr;">
+          <div class="form-group">
+            <label for="subAccount">选择配置方案</label>
+            <select id="subAccount" onchange="generateUrls()">
+              <option value="">默认配置 (使用服务器环境变量)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="customHost">自定义域名/外网IP (可选，若不填则使用当前访问地址)</label>
+          <input type="text" id="customHost" class="form-control" placeholder="例如 http://my-dns.com:1234" oninput="generateUrls()">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+          您的订阅链接列表
+        </h2>
+        
+        <div class="form-group">
+          <label>M3U 格式订阅地址</label>
+          <div class="copy-box">
+            <span class="copy-text" id="m3uUrl">http://.../m3u</span>
+            <button class="copy-btn" onclick="copyToClipboard('m3uUrl', this)">复制地址</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>TXT 格式订阅地址 (适用于 TVBox / Fongmi 内置播放源)</label>
+          <div class="copy-box">
+            <span class="copy-text" id="txtUrl">http://.../txt</span>
+            <button class="copy-btn" onclick="copyToClipboard('txtUrl', this)">复制地址</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>XMLTV 格式 EPG 回看节目单地址</label>
+          <div class="copy-box">
+            <span class="copy-text" id="epgUrl">http://.../playback.xml</span>
+            <button class="copy-btn" onclick="copyToClipboard('epgUrl', this)">复制地址</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 配置管理 -->
+    <div id="accTab" class="tab-panel">
+      <div class="row" style="grid-template-columns: 1fr 2fr; align-items: start;">
+        <!-- 新增配置方案表单 -->
+        <div class="card">
+          <h2>添加/修改配置方案</h2>
+          <form id="accountForm" onsubmit="handleAccountSubmit(event)">
+            <div class="form-group">
+              <label for="accName">配置名称 (备注，例如: 爸爸的手机、客厅电视)</label>
+              <input type="text" id="accName" class="form-control" required placeholder="例如: 客厅电视">
+            </div>
+            <div class="form-group">
+              <label for="accId">配置ID (订阅代号)</label>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="accId" class="form-control" required placeholder="订阅链接中使用的代号" style="flex-grow: 1;">
+                <button type="button" class="action-btn" onclick="regenerateId()" style="padding: 10px 14px;">随机</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="accUserId">Migu User ID</label>
+              <input type="text" id="accUserId" class="form-control" required placeholder="网页抓包获取的 userId">
+            </div>
+            <div class="form-group">
+              <label for="accToken">Migu Token</label>
+              <input type="password" id="accToken" class="form-control" required placeholder="网页抓包获取的 token">
+            </div>
+            <div class="form-group">
+              <label for="accGroup">默认频道分组 (该配置订阅内容)</label>
+              <select id="accGroup">
+                <option value="">全部频道 (不进行分组过滤)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="accRate">默认画质 (清晰度)</label>
+              <select id="accRate">
+                <option value="">默认画质 (使用服务器全局配置)</option>
+                <option value="2">标清 (2)</option>
+                <option value="3">高清 (3)</option>
+                <option value="4">蓝光 (4)</option>
+                <option value="7">原画 (7)</option>
+                <option value="9">4K (9)</option>
+              </select>
+            </div>
+            <button type="submit" class="action-btn" style="width:100%;">保存配置</button>
+          </form>
+        </div>
+
+        <!-- 配置列表 -->
+        <div class="card">
+          <h2>当前配置方案列表</h2>
+          <div style="overflow-x: auto;">
+            <table id="accountsTable">
+              <thead>
+                <tr>
+                  <th>配置名称</th>
+                  <th>配置ID (代号)</th>
+                  <th>Migu User ID</th>
+                  <th>播放画质</th>
+                  <th>订阅分组</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 动态插入 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 频道列表与台标管家 -->
+    <div id="chanTab" class="tab-panel">
+      <div class="channel-layout">
+        <!-- 频道列表（左） -->
+        <div class="card">
+          <h2>频道预览列表</h2>
+          <div class="search-bar">
+            <input type="text" id="channelSearch" class="form-control" placeholder="输入频道名称快速搜索..." oninput="renderChannels()">
+          </div>
+          <div class="channel-grid" id="channelGrid">
+            <!-- 动态生成频道卡片 -->
+          </div>
+        </div>
+
+        <!-- 本地台标管理（右） -->
+        <div class="card">
+          <h2>台标托管管家</h2>
+          <div class="dropzone" id="dropzone" onclick="document.getElementById('generalFileInput').click()">
+            <svg style="width: 32px; height: 32px; margin: 0 auto; color: var(--accent-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <p>点击选择文件 或将图片拖到此处</p>
+            <p style="font-size: 11px;">(请重命名为对应的“频道名称”，支持 png/jpg/webp)</p>
+          </div>
+          <input type="file" id="generalFileInput" class="upload-file-input" accept="image/png, image/jpeg, image/webp" onchange="handleGeneralUpload(this.files)">
+
+          <h3>本地台标库</h3>
+          <div class="logo-list-scroll" id="logoList">
+            <!-- 动态生成本地文件列表 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 隐藏用于单个频道的文件上传组件 -->
+  <input type="file" id="channelLogoInput" class="upload-file-input" accept="image/png, image/jpeg, image/webp">
+
+  <!-- 登录弹出框 -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <h3>输入管理密码</h3>
+      <p>检测到服务端已启用访问保护，请输入访问密码（mpass）继续。</p>
+      <div class="form-group">
+        <input type="password" id="loginPassword" class="form-control" placeholder="请输入服务器访问密码">
+      </div>
+      <button class="modal-btn" onclick="submitLogin()">确认登录</button>
+    </div>
+  </div>
+
+  <!-- 消息提示栏 -->
+  <div class="toast-msg" id="toast">操作成功</div>
+
+  <script>
+    // 数据全局缓存
+    let accountsList = [];
+    let channelsList = [];
+    let localLogosList = [];
+    let selectedChannelName = "";
+
+    const passKey = 'migu_pass';
+
+    const rateTextMap = {
+      "": "默认全局画质",
+      "2": "标清 (2)",
+      "3": "高清 (3)",
+      "4": "蓝光 (4)",
+      "7": "原画 (7)",
+      "9": "4K (9)"
+    };
+
+    function getPass() {
+      return localStorage.getItem(passKey) || '';
+    }
+
+    function getApiUrl(path) {
+      const p = getPass();
+      if (p) {
+        return `/${p}${path}`;
+      }
+      return path;
+    }
+
+    // 核心接口请求封装
+    async function apiFetch(path, options = {}) {
+      const url = getApiUrl(path);
+      const resp = await fetch(url, options);
+      
+      const contentType = resp.headers.get('content-type') || '';
+      if (contentType.includes('text/plain') || contentType.includes('text/html')) {
+        const text = await resp.clone().text();
+        if (text.includes('身份认证失败')) {
+          showLoginModal(true);
+          throw new Error('Authentication failed');
+        }
+      }
+      
+      if (!resp.ok) {
+        throw new Error(`API returned ${resp.status}`);
+      }
+      return resp;
+    }
+
+    // UI Toast 提示
+    function showToast(text, isError = false) {
+      const toast = document.getElementById("toast");
+      toast.innerText = text;
+      if (isError) {
+        toast.classList.add("error");
+      } else {
+        toast.classList.remove("error");
+      }
+      toast.classList.add("active");
+      setTimeout(() => {
+        toast.classList.remove("active");
+      }, 3000);
+    }
+
+    // 选项卡切换
+    function switchTab(tabId, btn) {
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      
+      document.getElementById(tabId).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    // 复制链接
+    function copyToClipboard(elementId, btn) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.innerText = "已复制!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.innerText = "复制地址";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    }
+
+    // 登录弹窗控制
+    function showLoginModal(show) {
+      const modal = document.getElementById("loginModal");
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (show) {
+        modal.classList.add("active");
+        logoutBtn.style.display = "none";
+      } else {
+        modal.classList.remove("active");
+        if (localStorage.getItem(passKey)) {
+          logoutBtn.style.display = "block";
+        }
+      }
+    }
+
+    // 提交密码
+    async function submitLogin() {
+      const pwd = document.getElementById("loginPassword").value;
+      if (!pwd) {
+        showToast("请输入密码！", true);
+        return;
+      }
+      localStorage.setItem(passKey, pwd);
+      
+      // 测试访问
+      try {
+        await testAuth();
+        showLoginModal(false);
+        showToast("登录成功！");
+        await reloadData();
+      } catch (err) {
+        localStorage.removeItem(passKey);
+        showToast("密码验证失败，请重新输入！", true);
+      }
+    }
+
+    async function testAuth() {
+      // 访问需要权限的 API 进行探测
+      await apiFetch('/api/accounts');
+    }
+
+    // 登出
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem(passKey);
+      showLoginModal(true);
+    });
+
+    // 随机6位ID生成
+    function generateRandomId() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function regenerateId() {
+      document.getElementById("accId").value = generateRandomId();
+    }
+
+    function resetAccountForm() {
+      document.getElementById("accountForm").reset();
+      regenerateId();
+    }
+
+    // 初始化配置探测
+    async function initConfig() {
+      try {
+        const resp = await fetch('/api/config');
+        const data = await resp.json();
+        if (data.needsPass) {
+          const storedPass = getPass();
+          if (storedPass) {
+            try {
+              await testAuth();
+              // 已保存的密码验证成功，直接加载数据
+              showLoginModal(false);
+              await reloadData();
+            } catch (e) {
+              // 密码过期或修改，弹出登录框
+              localStorage.removeItem(passKey);
+              showLoginModal(true);
+            }
+          } else {
+            showLoginModal(true);
+          }
+        } else {
+          // 未配置密码，直接加载数据
+          showLoginModal(false);
+          await reloadData();
+        }
+      } catch (e) {
+        console.error("配置初始化失败", e);
+      }
+    }
+
+    // 重载数据
+    async function reloadData() {
+      await Promise.all([
+        loadAccounts(),
+        loadChannels(),
+        loadLocalLogos()
+      ]);
+      populateGroupSelectors();
+      generateUrls();
+    }
+
+    // 1. 加载配置方案列表
+    async function loadAccounts() {
+      try {
+        const resp = await apiFetch("/api/accounts");
+        accountsList = await resp.json();
+        
+        // 渲染表格
+        const tbody = document.querySelector("#accountsTable tbody");
+        tbody.innerHTML = "";
+        
+        // 渲染下拉选择器
+        const select = document.getElementById("subAccount");
+        // 保留第一项默认
+        select.innerHTML = '<option value="">默认配置 (使用服务器环境变量)</option>';
+
+        accountsList.forEach(acc => {
+          // 渲染表格
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(acc.name)}</strong></td>
+            <td><code>${escapeHtml(acc.id)}</code></td>
+            <td><code>${escapeHtml(acc.userId)}</code></td>
+            <td><span class="channel-group" style="margin-bottom:0;">${escapeHtml(rateTextMap[acc.rateType] || "默认")}</span></td>
+            <td><span class="channel-group" style="margin-bottom:0; background:rgba(16,185,129,0.1); color:#34d399;">${escapeHtml(acc.group || "全部频道")}</span></td>
+            <td><button class="delete-action" onclick="handleDeleteAccount('${escapeHtml(acc.id)}')">删除</button></td>
+          `;
+          tbody.appendChild(tr);
+
+          // 渲染下拉框
+          const opt = document.createElement("option");
+          opt.value = acc.id;
+          opt.innerText = `${acc.name} (${acc.id})`;
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        console.error("获取账号列表失败", e);
+      }
+    }
+
+    // 新增/修改配置映射
+    async function handleAccountSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("accName").value.trim();
+      const id = document.getElementById("accId").value.trim();
+      const userId = document.getElementById("accUserId").value.trim();
+      const token = document.getElementById("accToken").value.trim();
+      const group = document.getElementById("accGroup").value;
+      const rateType = document.getElementById("accRate").value;
+
+      if (!/^[a-zA-Z0-9_]+$/.test(id)) {
+        showToast("配置ID只允许包含英文字母、数字和下划线！", true);
+        return;
+      }
+
+      try {
+        await apiFetch("/api/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, name, userId, token, group, rateType })
+        });
+        showToast("配置方案保存成功！");
+        resetAccountForm();
+        await reloadData();
+      } catch (err) {
+        showToast("保存配置方案失败，请检查密码权限！", true);
+      }
+    }
+
+    // 删除配置方案
+    async function handleDeleteAccount(id) {
+      if (!confirm(`确认删除该配置方案吗？`)) return;
+      try {
+        await apiFetch(`/api/accounts?id=${encodeURIComponent(id)}`, {
+          method: "DELETE"
+        });
+        showToast("删除成功！");
+        await reloadData();
+      } catch (err) {
+        showToast("删除配置方案失败！", true);
+      }
+    }
+
+    // 2. 加载频道列表
+    async function loadChannels() {
+      try {
+        const resp = await apiFetch("/api/channels");
+        channelsList = await resp.json();
+        renderChannels();
+      } catch (e) {
+        console.error("加载频道列表失败", e);
+      }
+    }
+
+    // 填充添加表单的分类下拉菜单
+    function populateGroupSelectors() {
+      const accGroupSelect = document.getElementById("accGroup");
+      const groups = new Set();
+      channelsList.forEach(c => {
+        if (c.group) groups.add(c.group);
+      });
+      
+      accGroupSelect.innerHTML = '<option value="">全部频道 (不进行分组过滤)</option>';
+      groups.forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g;
+        opt.innerText = g;
+        accGroupSelect.appendChild(opt);
+      });
+    }
+
+    // 渲染频道列表卡片
+    function renderChannels() {
+      const grid = document.getElementById("channelGrid");
+      const query = document.getElementById("channelSearch").value.trim().toLowerCase();
+      
+      grid.innerHTML = "";
+      
+      const filtered = channelsList.filter(c => {
+        return c.name.toLowerCase().includes(query) || (c.group && c.group.toLowerCase().includes(query));
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px 0;">未搜索到匹配的频道</div>';
+        return;
+      }
+
+      filtered.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "channel-item";
+        
+        let logoHtml = `<div class="logo-missing">暂无台标</div>`;
+        if (c.logo) {
+          // 如果台标是本地图片路径（原本包含占位符），替换占位符为当前的 host
+          const origin = window.location.origin;
+          const logoSrc = c.logo.replaceAll("${replace}", origin);
+          logoHtml = `<img src="${logoSrc}" alt="${c.name}" onerror="this.style.display='none'">`;
+        }
+
+        card.innerHTML = `
+          <div class="logo-preview-box">${logoHtml}</div>
+          <div class="channel-name">${escapeHtml(c.name)}</div>
+          <div class="channel-group">${escapeHtml(c.group)}</div>
+          <div class="upload-btn-wrap">
+            <button class="upload-trigger-btn" onclick="triggerChannelLogoUpload('${escapeHtml(c.name)}')">上传台标</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // 单个频道专属台标上传唤醒
+    function triggerChannelLogoUpload(channelName) {
+      selectedChannelName = channelName;
+      document.getElementById("channelLogoInput").click();
+    }
+
+    // 监听单个频道的文件选择并上传
+    document.getElementById("channelLogoInput").addEventListener("change", async function() {
+      if (this.files.length === 0 || !selectedChannelName) return;
+      const file = this.files[0];
+      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+      const targetName = selectedChannelName + ext;
+      
+      showToast(`正在上传 ${selectedChannelName} 的台标...`);
+      try {
+        await uploadLogoFile(file, targetName);
+        showToast("台标上传成功，正在刷新数据...");
+        this.value = "";
+        await reloadData();
+      } catch (err) {
+        showToast("台标上传失败！", true);
+      }
+    });
+
+    // 核心文件上传对接
+    async function uploadLogoFile(file, targetName) {
+      await apiFetch("/api/upload-logo", {
+        method: "POST",
+        headers: {
+          "x-filename": encodeURIComponent(targetName)
+        },
+        body: file // 直接传输二进制数据流
+      });
+    }
+
+    // 3. 加载本地台标库
+    async function loadLocalLogos() {
+      try {
+        const resp = await apiFetch("/api/logos");
+        localLogosList = await resp.json();
+        
+        const listDiv = document.getElementById("logoList");
+        listDiv.innerHTML = "";
+        
+        if (localLogosList.length === 0) {
+          listDiv.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 13px;">本地尚未托管任何台标</div>';
+          return;
+        }
+
+        localLogosList.forEach(filename => {
+          const item = document.createElement("div");
+          item.className = "logo-list-item";
+          
+          const origin = window.location.origin;
+          const logoUrl = `${origin}/channel_logo/${encodeURIComponent(filename)}`;
+
+          item.innerHTML = `
+            <div class="logo-list-info">
+              <div class="logo-thumb">
+                <img src="${logoUrl}" onerror="this.style.display='none'">
+              </div>
+              <span style="font-size:13px; font-family: monospace;">${escapeHtml(filename)}</span>
+            </div>
+            <button class="delete-action" onclick="handleDeleteLogo('${escapeHtml(filename)}')">删除</button>
+          `;
+          listDiv.appendChild(item);
+        });
+      } catch (e) {
+        console.error("加载本地台标库失败", e);
+      }
+    }
+
+    // 删除台标文件
+    async function handleDeleteLogo(filename) {
+      if (!confirm(`确认删除本地台标 ${filename} 吗？`)) return;
+      try {
+        await apiFetch(`/api/delete-logo?name=${encodeURIComponent(filename)}`, {
+          method: "DELETE"
+        });
+        showToast("台标文件已成功删除！");
+        await reloadData();
+      } catch (err) {
+        showToast("删除台标失败！", true);
+      }
+    }
+
+    // 通用台标选择上传
+    async function handleGeneralUpload(files) {
+      if (files.length === 0) return;
+      showToast("正在上传...");
+      try {
+        for (const file of files) {
+          await uploadLogoFile(file, file.name);
+        }
+        showToast("台标全部上传成功！");
+        await reloadData();
+      } catch (e) {
+        showToast("部分文件上传失败！", true);
+      }
+    }
+
+    // 拖拽多选文件上传事件
+    const dropzone = document.getElementById("dropzone");
+    
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      await handleGeneralUpload(files);
+    });
+
+
+    // 4. 实时极简订阅链接生成逻辑
+    function generateUrls() {
+      const alias = document.getElementById("subAccount").value;
+      let hostOverride = document.getElementById("customHost").value.trim();
+      
+      const origin = hostOverride || window.location.origin;
+      const pwd = getPass();
+      const pwdPath = pwd ? `/${pwd}` : '';
+
+      const params = [];
+      if (alias) params.push(`account=${encodeURIComponent(alias)}`);
+      
+      const paramStr = params.length > 0 ? `?${params.join("&")}` : "";
+
+      document.getElementById("m3uUrl").innerText = `${origin}${pwdPath}/m3u${paramStr}`;
+      document.getElementById("txtUrl").innerText = `${origin}${pwdPath}/txt${paramStr}`;
+      document.getElementById("epgUrl").innerText = `${origin}${pwdPath}/playback.xml${paramStr}`;
+    }
+
+    // 安全 HTML 转义防止 XSS
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 页面初始化加载
+    window.addEventListener("load", () => {
+      initConfig();
+      resetAccountForm();
+    });
+  </script>
+</body>
+</html>

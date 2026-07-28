@@ -6,7 +6,7 @@ import { printDebug, printGreen, printGrey, printRed, printYellow } from "./colo
 // url缓存 降低请求频率
 const urlCache = {}
 
-function interfaceStr(url, headers, urlUserId, urlToken) {
+function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
 
   let result = {
     content: null,
@@ -41,6 +41,19 @@ function interfaceStr(url, headers, urlUserId, urlToken) {
     return result
   }
 
+  let content = `${result.content}`;
+
+  // 1. 进行分组过滤
+  const groupFilter = searchParams ? searchParams.get("group") : null;
+  if (groupFilter && groupFilter !== "全部") {
+    if (url === "/m3u" || url.endsWith("interface.txt")) {
+      content = filterM3UByGroup(content, groupFilter);
+    } else if (url === "/txt" || url.endsWith("interfaceTXT.txt")) {
+      content = filterTXTByGroup(content, groupFilter);
+    }
+  }
+
+  // 2. 替换 Host 占位符
   let replaceHost = `http://${headers.host}`
 
   if (host != "" && (headers["x-real-ip"] || headers["x-forwarded-for"] || host.indexOf(headers.host) != -1)) {
@@ -55,12 +68,74 @@ function interfaceStr(url, headers, urlUserId, urlToken) {
     replaceHost = `${replaceHost}/${urlUserId}/${urlToken}`
   }
 
-  result.content = `${result.content}`.replaceAll("${replace}", replaceHost);
+  content = content.replaceAll("${replace}", replaceHost);
 
-  return result
+  // 3. 动态拼接 Query 参数到播放链接末尾 (例如 ?account=mom)
+  const paramsToAppend = [];
+  const account = searchParams ? searchParams.get("account") : null;
+  if (account) paramsToAppend.push(`account=${encodeURIComponent(account)}`);
+
+  if (paramsToAppend.length > 0) {
+    const appendStr = paramsToAppend.join("&");
+    const lines = content.split("\n");
+    for (let k = 0; k < lines.length; k++) {
+      const trimmed = lines[k].trim();
+      if (trimmed && !trimmed.startsWith("#") && (trimmed.startsWith("http") || trimmed.includes(replaceHost))) {
+        const separator = trimmed.includes("?") ? "&" : "?";
+        lines[k] = trimmed + separator + appendStr;
+      }
+    }
+    content = lines.join("\n");
+  }
+
+  result.content = content;
+  return result;
 }
 
-async function channel(url, urlUserId, urlToken) {
+// M3U 过滤辅助函数
+function filterM3UByGroup(content, targetGroup) {
+  const lines = content.split("\n");
+  const resultLines = [lines[0]]; // 保留 #EXTM3U 头部
+  for (let k = 1; k < lines.length; k++) {
+    const line = lines[k];
+    if (line.startsWith("#EXTINF:")) {
+      const groupMatch = line.match(/group-title="([^"]*)"/);
+      const group = groupMatch ? groupMatch[1] : "";
+      if (group === targetGroup) {
+        resultLines.push(line);
+        if (k + 1 < lines.length) {
+          resultLines.push(lines[k + 1]);
+        }
+      }
+      k++; // 跳过紧随其后的 URL 行
+    }
+  }
+  return resultLines.join("\n");
+}
+
+// TXT 过滤辅助函数
+function filterTXTByGroup(content, targetGroup) {
+  const lines = content.split("\n");
+  const resultLines = [];
+  let inGroup = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.endsWith(",#genre#")) {
+      const groupName = trimmed.substring(0, trimmed.length - 8);
+      if (groupName === targetGroup) {
+        inGroup = true;
+        resultLines.push(line);
+      } else {
+        inGroup = false;
+      }
+    } else if (inGroup && trimmed) {
+      resultLines.push(line);
+    }
+  }
+  return resultLines.join("\n");
+}
+
+async function channel(url, urlUserId, urlToken, requestRateType) {
 
   let result = {
     code: 200,
@@ -91,8 +166,14 @@ async function channel(url, urlUserId, urlToken) {
 
   printYellow("频道ID " + pid)
 
+  // 决定当前请求的清晰度
+  const currentRateType = requestRateType !== undefined && requestRateType !== null ? parseInt(requestRateType) : parseInt(rateType);
+
+  // 构造独立缓存 Key (防止多账号或多画质数据互相覆盖)
+  const cacheKey = `${pid}_${urlUserId || ""}_${currentRateType}`;
+
   // 是否存在缓存
-  const cache = channelCache(pid, params)
+  const cache = channelCache(cacheKey, params)
   if (cache.haveCache) {
     result.code = cache.code
     result.playURL = cache.playURL
@@ -103,10 +184,10 @@ async function channel(url, urlUserId, urlToken) {
   let resObj = {}
   try {
     // 未登录请求720p
-    if (rateType >= 3 && (urlUserId == "" || urlToken == "")) {
+    if (currentRateType >= 3 && (urlUserId == "" || urlToken == "")) {
       resObj = await getAndroidURL720p(pid)
     } else {
-      resObj = await getAndroidURL(urlUserId, urlToken, pid, rateType)
+      resObj = await getAndroidURL(urlUserId, urlToken, pid, currentRateType)
     }
   } catch (error) {
     console.log(error)
@@ -115,17 +196,8 @@ async function channel(url, urlUserId, urlToken) {
   }
   printDebug(`添加加密字段后链接 ${resObj.url}`)
 
-
-  // 可以正确跳转了 不需要再手动过滤了
-  // if (resObj.url != "") {
-  //   const location = await get302URL(resObj)
-  //   if (location != "") {
-  //     resObj.url = location
-  //   }
-  // }
   printLoginInfo(resObj)
-  // printRed(resObj.url)
-  printGreen(`添加节目缓存 ${pid}`)
+  printGreen(`添加节目缓存 ${cacheKey}`)
   // 缓存有效时长
   let addTime = 3 * 60 * 60 * 1000
   // 节目调整
@@ -133,8 +205,7 @@ async function channel(url, urlUserId, urlToken) {
     addTime = 1 * 60 * 1000
   }
   // 加入缓存
-  urlCache[pid] = {
-    // 有效期3小时 节目调整时改为1分钟
+  urlCache[cacheKey] = {
     valTime: Date.now() + addTime,
     url: resObj.url,
     content: resObj.content,
@@ -161,7 +232,7 @@ async function channel(url, urlUserId, urlToken) {
   return result
 }
 
-function channelCache(pid, params) {
+function channelCache(cacheKey, params) {
   let cache = {
     haveCache: false,
     code: 200,
@@ -169,20 +240,20 @@ function channelCache(pid, params) {
     playURL: "",
     cacheDesc: ""
   }
-  if (typeof urlCache[pid] === "object") {
-    const valTime = urlCache[pid].valTime - Date.now()
+  if (typeof urlCache[cacheKey] === "object") {
+    const valTime = urlCache[cacheKey].valTime - Date.now()
     // 缓存是否有效
     if (valTime >= 0) {
       cache.haveCache = true
-      let playURL = urlCache[pid].url
+      let playURL = urlCache[cacheKey].url
       let msg = "节目调整，暂不提供服务"
-      if (urlCache[pid].content != null) {
-        printLoginInfo(urlCache[pid])
-        msg = urlCache[pid].content.message
+      if (urlCache[cacheKey].content != null) {
+        printLoginInfo(urlCache[cacheKey])
+        msg = urlCache[cacheKey].content.message
       }
       // 节目调整
       if (playURL == "") {
-        cache.cacheDesc = `${pid} ${msg}`
+        cache.cacheDesc = `${cacheKey.split("_")[0]} ${msg}`
         return cache
       }
 

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "mom",
+    "name": "妈妈的手机",
+    "userId": "111",
+    "token": "222",
+    "group": "",
+    "rateType": ""
+  },
+  {
+    "id": "dad",
+    "name": "客厅电视机",
+    "userId": "333",
+    "token": "444",
+    "group": "央视",
+    "rateType": "4"
+  }
+]
