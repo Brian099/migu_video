@@ -660,7 +660,7 @@
               <select id="accRate">
                 <option value="">默认画质 (使用服务器全局配置)</option>
                 <option value="2">标清 (2)</option>
-                <option value="3">高清 (3)</option>
+                <option value="3" selected>高清 (3)</option>
                 <option value="4">蓝光 (4)</option>
                 <option value="7">原画 (7)</option>
                 <option value="9">4K (9)</option>
@@ -822,14 +822,58 @@
     // 复制链接
     function copyToClipboard(elementId, btn) {
       const text = document.getElementById(elementId).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        btn.innerText = "已复制!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.innerText = "复制地址";
-          btn.classList.remove("copied");
-        }, 2000);
-      });
+      
+      // 优先尝试现代 clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          onCopySuccess(btn);
+        }).catch(err => {
+          fallbackCopyToClipboard(text, btn);
+        });
+      } else {
+        fallbackCopyToClipboard(text, btn);
+      }
+    }
+
+    function fallbackCopyToClipboard(text, btn) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.width = "2em";
+      textArea.style.height = "2em";
+      textArea.style.padding = "0";
+      textArea.style.border = "none";
+      textArea.style.outline = "none";
+      textArea.style.boxShadow = "none";
+      textArea.style.background = "transparent";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          onCopySuccess(btn);
+        } else {
+          showToast("复制失败，请手动选择复制！", true);
+        }
+      } catch (err) {
+        console.error("Fallback: 无法复制", err);
+        showToast("复制失败，请手动选择复制！", true);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    function onCopySuccess(btn) {
+      btn.innerText = "已复制!";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.innerText = "复制地址";
+        btn.classList.remove("copied");
+      }, 2000);
     }
 
     // 登录弹窗控制
