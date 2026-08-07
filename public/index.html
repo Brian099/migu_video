@@ -550,124 +550,63 @@
       box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
     }
 
-    /* 自定义多选下拉框 */
-    .custom-multiselect-container {
-      position: relative;
-      width: 100%;
+    /* 分组网格选择器 */
+    .group-grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
-    .multiselect-trigger {
+    .group-grid-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      cursor: pointer;
-      user-select: none;
-      min-height: 45px;
-      box-sizing: border-box;
-    }
-
-    .multiselect-trigger .placeholder {
-      color: var(--text-muted);
-    }
-
-    .multiselect-trigger span:not(.placeholder) {
-      color: var(--text-main);
-    }
-
-    .multiselect-trigger .arrow {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: var(--text-muted);
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: transform 0.2s;
-    }
-
-    .multiselect-trigger.open .arrow {
-      transform: rotate(180deg);
-    }
-
-    .multiselect-dropdown {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      background: rgba(17, 24, 39, 0.98);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      margin-top: 5px;
-      z-index: 100;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      max-height: 250px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .dropdown-actions {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border-color);
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    .dropdown-actions button {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: all 0.2s;
-    }
-
-    .dropdown-actions button:hover {
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .dropdown-list {
-      padding: 6px 0;
-      overflow-y: auto;
-      flex-grow: 1;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      padding: 10px 16px;
+      padding: 10px 14px;
       cursor: pointer;
       font-size: 13px;
       color: var(--text-main);
-      transition: background 0.15s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
 
-    .dropdown-item:hover {
-      background: rgba(124, 58, 237, 0.1);
+    .group-grid-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(124, 58, 237, 0.4);
     }
 
-    .dropdown-item input[type="checkbox"] {
-      margin-right: 12px;
-      width: 15px;
-      height: 15px;
+    .group-grid-item.active {
+      background: rgba(124, 58, 237, 0.15);
+      border-color: var(--accent-color);
+      color: #fff;
+      font-weight: 500;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .group-grid-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
       accent-color: var(--accent-color);
       cursor: pointer;
+      pointer-events: none;
     }
 
-    .dropdown-item label {
+    .group-grid-item label {
       cursor: pointer;
       margin-bottom: 0 !important;
-      font-weight: 400 !important;
-      color: var(--text-main) !important;
+      font-weight: inherit !important;
+      color: inherit !important;
       flex-grow: 1;
-      user-select: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -702,21 +641,20 @@
         </div>
 
         <div class="form-group" style="margin-top: 20px;">
-          <label>频道分组筛选 (勾选需提取的分组，保存后 /m3u 订阅地址将直接输出过滤后的分组频道数据)</label>
-          <div class="custom-multiselect-container">
-            <div class="form-control multiselect-trigger" id="groupSelectTrigger" onclick="toggleGroupDropdown(event)">
-              <span id="selectedGroupsText" class="placeholder">全部频道 (不进行分组过滤)</span>
-              <svg class="arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="margin-bottom: 0;">频道分组筛选 (勾选需保留的分组，点击下方“保存分组配置”后生效)</label>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" onclick="selectGroupsAction('all')" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">全选</button>
+              <button type="button" onclick="selectGroupsAction('none')" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-muted); padding: 3px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;">清空</button>
             </div>
-            <div class="multiselect-dropdown" id="groupDropdown" style="display: none;" onclick="event.stopPropagation()">
-              <div class="dropdown-actions">
-                <button type="button" onclick="selectGroupsAction('all')">全选</button>
-                <button type="button" onclick="selectGroupsAction('none')">清空</button>
-              </div>
-              <div class="dropdown-list" id="groupDropdownList">
-                <!-- 自动解析 M3U 中的分组列表 -->
-              </div>
-            </div>
+          </div>
+          
+          <div id="selectedGroupsSummary" style="font-size: 12px; color: var(--accent-color); margin-bottom: 8px; font-weight: 500;">
+            当前规则: 输出全部频道 (未限制分组)
+          </div>
+
+          <div class="group-grid-container" id="groupGridList">
+            <!-- 动态生成网格平铺勾选卡片 -->
           </div>
         </div>
 
@@ -1029,35 +967,8 @@
       generateUrls();
     }
 
-    // 下拉多选相关交互逻辑
-    function toggleGroupDropdown(e) {
-      if (e) e.stopPropagation();
-      const dropdown = document.getElementById("groupDropdown");
-      const trigger = document.getElementById("groupSelectTrigger");
-      if (dropdown.style.display === "none") {
-        dropdown.style.display = "flex";
-        trigger.classList.add("open");
-      } else {
-        dropdown.style.display = "none";
-        trigger.classList.remove("open");
-      }
-    }
-
-    // 点击空白处关闭多选下拉框
-    document.addEventListener("click", (e) => {
-      const container = document.querySelector(".custom-multiselect-container");
-      if (container && !container.contains(e.target)) {
-        const dropdown = document.getElementById("groupDropdown");
-        const trigger = document.getElementById("groupSelectTrigger");
-        if (dropdown) {
-          dropdown.style.display = "none";
-          if (trigger) trigger.classList.remove("open");
-        }
-      }
-    });
-
     function getSelectedGroups() {
-      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      const checkboxes = document.querySelectorAll("#groupGridList input[type='checkbox']");
       const selected = [];
       checkboxes.forEach(cb => {
         if (cb.checked) {
@@ -1069,15 +980,23 @@
 
     function setSelectedGroups(groupString) {
       const selected = groupString ? groupString.split(",").map(s => s.trim()).filter(Boolean) : [];
-      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
-      checkboxes.forEach(cb => {
-        cb.checked = selected.includes(cb.value);
+      const items = document.querySelectorAll("#groupGridList .group-grid-item");
+      items.forEach(item => {
+        const cb = item.querySelector("input");
+        if (cb) {
+          cb.checked = selected.includes(cb.value);
+          if (cb.checked) {
+            item.classList.add("active");
+          } else {
+            item.classList.remove("active");
+          }
+        }
       });
       updateSelectedGroupsText();
     }
 
     function updateSelectedGroupsText() {
-      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      const checkboxes = document.querySelectorAll("#groupGridList input[type='checkbox']");
       const selected = [];
       checkboxes.forEach(cb => {
         if (cb.checked) {
@@ -1085,22 +1004,30 @@
         }
       });
       
-      const textEl = document.getElementById("selectedGroupsText");
+      const textEl = document.getElementById("selectedGroupsSummary");
       if (textEl) {
         if (selected.length === 0 || selected.length === checkboxes.length) {
-          textEl.innerText = "全部频道 (不进行分组过滤)";
-          textEl.classList.add("placeholder");
+          textEl.innerText = "当前规则: 输出全部频道 (未限制分组)";
+          textEl.style.color = "var(--text-muted)";
         } else {
-          textEl.innerText = `已选择 (${selected.length}/${checkboxes.length}个分组): ` + selected.join(", ");
-          textEl.classList.remove("placeholder");
+          textEl.innerText = `当前选中 (${selected.length}/${checkboxes.length}个分组): ` + selected.join(", ");
+          textEl.style.color = "var(--accent-color)";
         }
       }
     }
 
     function selectGroupsAction(action) {
-      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
-      checkboxes.forEach(cb => {
-        cb.checked = (action === 'all');
+      const items = document.querySelectorAll("#groupGridList .group-grid-item");
+      items.forEach(item => {
+        const cb = item.querySelector("input");
+        if (cb) {
+          cb.checked = (action === 'all');
+          if (cb.checked) {
+            item.classList.add("active");
+          } else {
+            item.classList.remove("active");
+          }
+        }
       });
       updateSelectedGroupsText();
       generateUrls();
@@ -1117,35 +1044,38 @@
       }
     }
 
-    // 动态生成多选复选框列表
+    // 动态生成网格平铺勾选列表
     async function populateGroupSelectors() {
       const groups = new Set();
       channelsList.forEach(c => {
         if (c.group) groups.add(c.group);
       });
       
-      const dropdownList = document.getElementById("groupDropdownList");
-      if (!dropdownList) return;
+      const gridList = document.getElementById("groupGridList");
+      if (!gridList) return;
       
-      dropdownList.innerHTML = "";
+      gridList.innerHTML = "";
       groups.forEach(g => {
         const item = document.createElement("div");
-        item.className = "dropdown-item";
-        item.onclick = (e) => {
-          if (e.target.tagName !== "INPUT" && e.target.tagName !== "LABEL") {
-            const cb = item.querySelector("input");
-            if (cb) {
-              cb.checked = !cb.checked;
-              updateSelectedGroupsText();
+        item.className = "group-grid-item";
+        item.onclick = () => {
+          const cb = item.querySelector("input");
+          if (cb) {
+            cb.checked = !cb.checked;
+            if (cb.checked) {
+              item.classList.add("active");
+            } else {
+              item.classList.remove("active");
             }
+            updateSelectedGroupsText();
           }
         };
         
         item.innerHTML = `
-          <input type="checkbox" value="${escapeHtml(g)}" id="cb_${escapeHtml(g)}" onchange="updateSelectedGroupsText()">
-          <label for="cb_${escapeHtml(g)}" onclick="event.stopPropagation()">${escapeHtml(g)}</label>
+          <input type="checkbox" value="${escapeHtml(g)}" id="cb_${escapeHtml(g)}">
+          <label for="cb_${escapeHtml(g)}">${escapeHtml(g)}</label>
         `;
-        dropdownList.appendChild(item);
+        gridList.appendChild(item);
       });
       
       // 自动回显服务端保存的分组配置
