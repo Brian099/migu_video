@@ -550,85 +550,6 @@
       box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
     }
 
-    /* 配置选项卡式选择 */
-    .config-options-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 15px;
-      margin-top: 8px;
-    }
-
-    .config-option-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 16px 20px;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      position: relative;
-      overflow: hidden;
-      user-select: none;
-    }
-
-    .config-option-card:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(124, 58, 237, 0.4);
-    }
-
-    .config-option-card.active {
-      background: rgba(124, 58, 237, 0.12);
-      border-color: var(--accent-color);
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
-    .config-option-card .option-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .config-option-card .option-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .config-option-card.active .option-title {
-      color: #a78bfa;
-    }
-
-    .config-option-card .radio-indicator {
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid var(--text-muted);
-      border-radius: 50%;
-      display: inline-block;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .config-option-card.active .radio-indicator {
-      border-color: var(--accent-color);
-      background: var(--accent-color);
-    }
-
-    .config-option-card.active .radio-indicator::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 6px;
-      height: 6px;
-      background: #fff;
-      border-radius: 50%;
-    }
-
     /* 自定义多选下拉框 */
     .custom-multiselect-container {
       position: relative;
@@ -871,15 +792,6 @@
     let selectedChannelName = "";
 
     const passKey = 'migu_pass';
-
-    const rateTextMap = {
-      "": "默认全局画质",
-      "2": "标清 (2)",
-      "3": "高清 (3)",
-      "4": "蓝光 (4)",
-      "7": "原画 (7)",
-      "9": "4K (9)"
-    };
 
     function getPass() {
       const stored = localStorage.getItem(passKey);
