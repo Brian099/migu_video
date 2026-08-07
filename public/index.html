@@ -968,18 +968,13 @@
     }
 
     function getSelectedGroups() {
-      const checkboxes = document.querySelectorAll("#groupGridList input[type='checkbox']");
-      const selected = [];
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          selected.push(cb.value);
-        }
-      });
+      const checkboxes = document.querySelectorAll("#groupGridList input[type='checkbox']:checked");
+      const selected = Array.from(checkboxes).map(cb => cb.value);
       return selected.join(",");
     }
 
-    function setSelectedGroups(groupString) {
-      const selected = groupString ? groupString.split(",").map(s => s.trim()).filter(Boolean) : [];
+    function setSelectedGroups(groupData) {
+      const selected = Array.isArray(groupData) ? groupData : (groupData ? groupData.split(",").map(s => s.trim()).filter(Boolean) : []);
       const items = document.querySelectorAll("#groupGridList .group-grid-item");
       items.forEach(item => {
         const cb = item.querySelector("input");
@@ -997,20 +992,16 @@
 
     function updateSelectedGroupsText() {
       const checkboxes = document.querySelectorAll("#groupGridList input[type='checkbox']");
-      const selected = [];
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          selected.push(cb.value);
-        }
-      });
+      const checkedBoxes = document.querySelectorAll("#groupGridList input[type='checkbox']:checked");
       
       const textEl = document.getElementById("selectedGroupsSummary");
       if (textEl) {
-        if (selected.length === 0 || selected.length === checkboxes.length) {
+        if (checkedBoxes.length === 0 || checkedBoxes.length === checkboxes.length) {
           textEl.innerText = "当前规则: 输出全部频道 (未限制分组)";
           textEl.style.color = "var(--text-muted)";
         } else {
-          textEl.innerText = `当前选中 (${selected.length}/${checkboxes.length}个分组): ` + selected.join(", ");
+          const names = Array.from(checkedBoxes).map(cb => cb.value).join(", ");
+          textEl.innerText = `当前选中 (${checkedBoxes.length}/${checkboxes.length}个分组): ` + names;
           textEl.style.color = "var(--accent-color)";
         }
       }
@@ -1030,7 +1021,6 @@
         }
       });
       updateSelectedGroupsText();
-      generateUrls();
     }
 
     // 2. 加载频道列表
@@ -1083,9 +1073,9 @@
         const resp = await apiFetch("/api/groups");
         const savedGroups = await resp.json();
         if (Array.isArray(savedGroups) && savedGroups.length > 0) {
-          setSelectedGroups(savedGroups.join(","));
+          setSelectedGroups(savedGroups);
         } else {
-          setSelectedGroups("");
+          setSelectedGroups([]);
         }
       } catch (e) {
         updateSelectedGroupsText();
@@ -1273,22 +1263,15 @@
 
     // 保存分组过滤配置到服务端
     async function saveGroupSettings() {
-      const selected = getSelectedGroups();
-      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
-      let selectedGroups = [];
-      if (selected && checkboxes.length > 0) {
-        const selectedArr = selected.split(",");
-        if (selectedArr.length < checkboxes.length) {
-          selectedGroups = selectedArr;
-        }
-      }
+      const checked = document.querySelectorAll("#groupGridList input[type='checkbox']:checked");
+      const selectedGroups = Array.from(checked).map(cb => cb.value);
       try {
         await apiFetch("/api/groups", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ groups: selectedGroups })
         });
-        showToast("分组配置已保存！访问 /m3u 和 /txt 将直接输出过滤后的频道数据。");
+        showToast("分组配置保存成功！访问 /m3u 和 /txt 将只输出勾选的分组频道。");
       } catch (err) {
         showToast("保存分组配置失败！", true);
       }

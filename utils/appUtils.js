@@ -101,17 +101,17 @@ function filterM3UByGroup(content, targetGroup) {
   const targetGroups = targetGroup.split(',').map(g => g.trim()).filter(Boolean);
   if (targetGroups.length === 0) return content;
 
-  const lines = content.split("\n");
+  const lines = content.split(/\r?\n/);
   const resultLines = [lines[0]]; // 保留 #EXTM3U 头部
   for (let k = 1; k < lines.length; k++) {
-    const line = lines[k];
+    const line = lines[k].trim();
     if (line.startsWith("#EXTINF:")) {
       const groupMatch = line.match(/group-title="([^"]*)"/);
       const group = groupMatch ? groupMatch[1] : "";
       if (targetGroups.includes(group)) {
         resultLines.push(line);
         if (k + 1 < lines.length) {
-          resultLines.push(lines[k + 1]);
+          resultLines.push(lines[k + 1].trim());
         }
       }
       k++; // 跳过紧随其后的 URL 行
@@ -125,13 +125,13 @@ function filterTXTByGroup(content, targetGroup) {
   const targetGroups = targetGroup.split(',').map(g => g.trim()).filter(Boolean);
   if (targetGroups.length === 0) return content;
 
-  const lines = content.split("\n");
+  const lines = content.split(/\r?\n/);
   const resultLines = [];
   let inGroup = false;
   for (const line of lines) {
     const trimmed = line.trim();
     if (trimmed.endsWith(",#genre#")) {
-      const groupName = trimmed.substring(0, trimmed.length - 8);
+      const groupName = trimmed.substring(0, trimmed.length - 8).trim();
       if (targetGroups.includes(groupName)) {
         inGroup = true;
         resultLines.push(line);
