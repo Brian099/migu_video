@@ -767,12 +767,27 @@
       return '';
     }
 
+    function getBaseUrl() {
+      const origin = window.location.origin;
+      let pathname = window.location.pathname;
+      if (pathname.endsWith('/index.html')) {
+        pathname = pathname.substring(0, pathname.length - 10);
+      } else if (pathname.endsWith('/admin')) {
+        pathname = pathname.substring(0, pathname.length - 5);
+      }
+      if (!pathname.endsWith('/')) {
+        pathname += '/';
+      }
+      return `${origin}${pathname}`.replace(/\/+$/, '');
+    }
+
     function getApiUrl(path) {
       const p = getPass();
-      if (p) {
-        return `/${p}${path}`;
+      const baseUrl = getBaseUrl();
+      if (p && !baseUrl.endsWith(`/${p}`)) {
+        return `${baseUrl}/${p}${path}`;
       }
-      return path;
+      return `${baseUrl}${path}`;
     }
 
     // 核心接口请求封装
@@ -1104,10 +1119,11 @@
         
         let logoHtml = `<div class="logo-missing">暂无台标</div>`;
         if (c.logo) {
-          // 如果台标是本地图片路径（原本包含占位符），替换占位符为当前的 host
-          const origin = window.location.origin;
-          const logoSrc = c.logo.replaceAll("${replace}", origin);
-          logoHtml = `<img src="${logoSrc}" alt="${c.name}" onerror="this.style.display='none'">`;
+          let logoSrc = c.logo.replaceAll("${replace}", getBaseUrl());
+          if (window.location.protocol === "https:" && logoSrc.startsWith("http://")) {
+            logoSrc = logoSrc.replace(/^http:\/\//, "https://");
+          }
+          logoHtml = `<img src="${logoSrc}" alt="${escapeHtml(c.name)}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'logo-missing\\'>暂无台标</div>';">`;
         }
 
         card.innerHTML = `
@@ -1175,13 +1191,12 @@
           const item = document.createElement("div");
           item.className = "logo-list-item";
           
-          const origin = window.location.origin;
-          const logoUrl = `${origin}/channel_logo/${encodeURIComponent(filename)}`;
+          const logoUrl = getApiUrl(`/channel_logo/${encodeURIComponent(filename)}`);
 
           item.innerHTML = `
             <div class="logo-list-info">
               <div class="logo-thumb">
-                <img src="${logoUrl}" onerror="this.style.display='none'">
+                <img src="${logoUrl}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'logo-missing\\'>缺失</div>';">
               </div>
               <span style="font-size:13px; font-family: monospace;">${escapeHtml(filename)}</span>
             </div>

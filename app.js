@@ -24,7 +24,7 @@ const server = http.createServer(async (req, res) => {
   // 身份认证
   if (pass != "") {
     // 排除前台静态页面、检测配置接口和本地台标静态资源，由前端页面和播放器直接拉取
-    if (url !== "/" && url !== "/index.html" && url !== "/admin" && url !== "/api/config" && !url.startsWith("/channel_logo/")) {
+    if (url !== "/" && url !== "/index.html" && url !== "/admin" && url !== "/api/config" && !url.includes("/channel_logo/")) {
       const urlSplit = url.split("/")
       if (urlSplit[1] != pass) {
         printRed(`身份认证失败`)
@@ -62,7 +62,11 @@ const server = http.createServer(async (req, res) => {
       
       try {
         const fileContent = fs.readFileSync(filePath);
-        res.writeHead(200, { "Content-Type": contentType });
+        res.writeHead(200, {
+          "Content-Type": contentType,
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=86400"
+        });
         res.end(fileContent);
         return;
       } catch (err) {
@@ -71,7 +75,7 @@ const server = http.createServer(async (req, res) => {
       }
     }
     
-    res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8" });
+    res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8", "Access-Control-Allow-Origin": "*" });
     res.end("台标文件不存在");
     return;
   }
