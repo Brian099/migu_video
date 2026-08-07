@@ -2,6 +2,7 @@ import { get302URL, getAndroidURL, getAndroidURL720p, printLoginInfo } from "./a
 import { readFileSync } from "./fileUtil.js";
 import { host, pass, rateType, token, userId } from "../config.js";
 import { printDebug, printGreen, printGrey, printRed, printYellow } from "./colorOut.js";
+import fs from "node:fs";
 
 // url缓存 降低请求频率
 const urlCache = {}
@@ -47,7 +48,6 @@ function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
   let groupFilter = searchParams ? searchParams.get("group") : null;
   if (!groupFilter) {
     try {
-      const fs = await import("node:fs");
       const configPath = `${process.cwd()}/data/groups.json`;
       if (fs.existsSync(configPath)) {
         const savedGroups = JSON.parse(fs.readFileSync(configPath, "utf-8"));
