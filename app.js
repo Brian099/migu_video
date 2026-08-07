@@ -28,8 +28,8 @@ const server = http.createServer(async (req, res) => {
       const urlSplit = url.split("/")
       if (urlSplit[1] != pass) {
         printRed(`身份认证失败`)
-        res.writeHead(200, { 'Content-Type': 'application/json;charset=UTF-8' });
-        res.end(`身份认证失败`); // 发送文件内容
+        res.writeHead(401, { 'Content-Type': 'application/json;charset=UTF-8' });
+        res.end(JSON.stringify({ error: "身份认证失败" }));
         return
       } else {
         printGreen("身份认证成功")

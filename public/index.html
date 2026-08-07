@@ -852,10 +852,10 @@
   <!-- 登录弹出框 -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-content">
-      <h3>输入管理密码</h3>
-      <p>检测到服务端已启用访问保护，请输入访问密码（mpass）继续。</p>
+      <h3>咪咕订阅后台登录</h3>
+      <p>检测到服务端配置了访问控制，请输入访问密码（mpass）登录控制台。</p>
       <div class="form-group">
-        <input type="password" id="loginPassword" class="form-control" placeholder="请输入服务器访问密码">
+        <input type="password" id="loginPassword" class="form-control" placeholder="请输入服务器访问密码 (mpass)" onkeydown="if(event.key==='Enter') submitLogin()">
       </div>
       <button class="modal-btn" onclick="submitLogin()">确认登录</button>
     </div>
@@ -905,7 +905,7 @@
       const resp = await fetch(url, options);
       
       const text = await resp.clone().text();
-      if (text.includes('身份认证失败')) {
+      if (resp.status === 401 || text.includes('身份认证失败')) {
         showLoginModal(true);
         throw new Error('Authentication failed');
       }
@@ -1001,12 +1001,15 @@
     function showLoginModal(show) {
       const modal = document.getElementById("loginModal");
       const logoutBtn = document.getElementById("logoutBtn");
+      const mainContainer = document.querySelector(".container");
       if (show) {
         modal.classList.add("active");
-        logoutBtn.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "none";
+        if (mainContainer) mainContainer.style.filter = "blur(8px)";
       } else {
         modal.classList.remove("active");
-        if (localStorage.getItem(passKey)) {
+        if (mainContainer) mainContainer.style.filter = "none";
+        if (localStorage.getItem(passKey) && logoutBtn) {
           logoutBtn.style.display = "block";
         }
       }
