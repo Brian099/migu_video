@@ -1,11 +1,11 @@
 // 用户id
-const userId = process.env.muserId || ""
+const userId = (process.env.muserId || "").trim()
 // 用户token 可以使用网页登录获取
-const token = process.env.mtoken || ""
+const token = (process.env.mtoken || "").trim()
 // 本地运行端口号
 const port = process.env.mport || 1234
 // 公网/自定义访问地址
-const host = process.env.mhost || ""
+const host = (process.env.mhost || "").trim()
 // 画质
 // 4蓝光(需要登录且账号有VIP)
 // 3高清
@@ -15,7 +15,7 @@ const rateType = process.env.mrateType || 3
 // const refreshToken = process.env.mrefreshToken || true
 const debug = process.env.mdebug || false
 // 访问密码 大小写字母和数字 添加后访问格式 http://ip:port/mpass/...
-const pass = process.env.mpass || ""
+const pass = (process.env.mpass || "").trim()
 // 是否开启hdr
 const enableHDR = process.env.menableHDR || true
 // 是否开启h265(原画画质)，开启可能存在兼容性问题，比如浏览器播放没有画面

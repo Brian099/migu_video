@@ -866,7 +866,6 @@
 
   <script>
     // 数据全局缓存
-    let accountsList = [];
     let channelsList = [];
     let localLogosList = [];
     let selectedChannelName = "";
@@ -1082,96 +1081,10 @@
     // 重载数据
     async function reloadData() {
       await Promise.all([
-        loadAccounts(),
         loadChannels(),
         loadLocalLogos()
       ]);
       populateGroupSelectors();
-      generateUrls();
-    }
-
-    // 1. 加载配置方案列表
-    async function loadAccounts() {
-      try {
-        const resp = await apiFetch("/api/accounts");
-        accountsList = await resp.json();
-        
-        // 渲染表格
-        const tbody = document.querySelector("#accountsTable tbody");
-        tbody.innerHTML = "";
-        
-        // 渲染配置选择器卡片
-        const container = document.getElementById("subAccountOptions");
-        const currentValue = document.getElementById("subAccount").value;
-        container.innerHTML = "";
-
-        // 1. 默认配置 card
-        const defaultCard = document.createElement("div");
-        defaultCard.className = "config-option-card";
-        defaultCard.setAttribute("data-value", "");
-        defaultCard.onclick = () => selectConfigOption("");
-        defaultCard.innerHTML = `
-          <div class="option-title">
-            <span>默认配置</span>
-            <span class="radio-indicator"></span>
-          </div>
-          <div class="option-subtitle">使用服务器环境变量</div>
-        `;
-        container.appendChild(defaultCard);
-
-        accountsList.forEach(acc => {
-          // 渲染表格
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td><strong>${escapeHtml(acc.name)}</strong></td>
-            <td><code>${escapeHtml(acc.id)}</code></td>
-            <td><code>${escapeHtml(acc.userId)}</code></td>
-            <td><span class="channel-group" style="margin-bottom:0;">${escapeHtml(rateTextMap[acc.rateType] || "默认")}</span></td>
-            <td><span class="channel-group" style="margin-bottom:0; background:rgba(16,185,129,0.1); color:#34d399;">${escapeHtml(acc.group || "全部频道")}</span></td>
-            <td>
-              <button class="edit-action" onclick="handleEditAccount('${escapeHtml(acc.id)}')" style="color: var(--accent-color); background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; margin-right: 8px;">编辑</button>
-              <button class="delete-action" onclick="handleDeleteAccount('${escapeHtml(acc.id)}')">删除</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-
-          // 渲染配置卡片
-          const card = document.createElement("div");
-          card.className = "config-option-card";
-          card.setAttribute("data-value", acc.id);
-          card.onclick = () => selectConfigOption(acc.id);
-          card.innerHTML = `
-            <div class="option-title">
-              <span>${escapeHtml(acc.name)}</span>
-              <span class="radio-indicator"></span>
-            </div>
-            <div class="option-subtitle">订阅代号: ${escapeHtml(acc.id)}</div>
-          `;
-          container.appendChild(card);
-        });
-
-        // 校验并选中当前值
-        let validValue = currentValue === "";
-        if (!validValue) {
-          validValue = accountsList.some(acc => acc.id === currentValue);
-        }
-        const targetValue = validValue ? currentValue : "";
-        selectConfigOption(targetValue);
-      } catch (e) {
-        console.error("获取账号列表失败", e);
-      }
-    }
-
-    // 选中配置方案
-    function selectConfigOption(value) {
-      document.getElementById("subAccount").value = value;
-      document.querySelectorAll("#subAccountOptions .config-option-card").forEach(card => {
-        if (card.getAttribute("data-value") === value) {
-          card.classList.add("active");
-        } else {
-          card.classList.remove("active");
-        }
-      });
       generateUrls();
     }
 
@@ -1249,63 +1162,7 @@
       updateSelectedGroupsText();
     }
 
-    // 编辑已有配置方案
-    function handleEditAccount(id) {
-      const acc = accountsList.find(a => a.id === id);
-      if (!acc) return;
-      document.getElementById("accName").value = acc.name || "";
-      document.getElementById("accId").value = acc.id || "";
-      document.getElementById("accUserId").value = acc.userId || "";
-      document.getElementById("accToken").value = acc.token || "";
-      document.getElementById("accRate").value = acc.rateType || "";
-      setSelectedGroups(acc.group || "");
-      
-      // 滚回表单区域
-      document.getElementById("accountForm").scrollIntoView({ behavior: "smooth" });
-    }
 
-    // 新增/修改配置映射
-    async function handleAccountSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById("accName").value.trim();
-      const id = document.getElementById("accId").value.trim();
-      const userId = document.getElementById("accUserId").value.trim();
-      const token = document.getElementById("accToken").value.trim();
-      const group = getSelectedGroups();
-      const rateType = document.getElementById("accRate").value;
-
-      if (!/^[a-zA-Z0-9_]+$/.test(id)) {
-        showToast("配置ID只允许包含英文字母、数字和下划线！", true);
-        return;
-      }
-
-      try {
-        await apiFetch("/api/accounts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, name, userId, token, group, rateType })
-        });
-        showToast("配置方案保存成功！");
-        resetAccountForm();
-        await reloadData();
-      } catch (err) {
-        showToast("保存配置方案失败，请检查密码权限！", true);
-      }
-    }
-
-    // 删除配置方案
-    async function handleDeleteAccount(id) {
-      if (!confirm(`确认删除该配置方案吗？`)) return;
-      try {
-        await apiFetch(`/api/accounts?id=${encodeURIComponent(id)}`, {
-          method: "DELETE"
-        });
-        showToast("删除成功！");
-        await reloadData();
-      } catch (err) {
-        showToast("删除配置方案失败！", true);
-      }
-    }
 
     // 2. 加载频道列表
     async function loadChannels() {
@@ -1514,21 +1371,20 @@
 
     // 4. 实时极简订阅链接生成逻辑
     function generateUrls() {
-      const alias = document.getElementById("subAccount").value;
-      let hostOverride = document.getElementById("customHost").value.trim();
+      const hostInput = document.getElementById("customHost");
+      let hostOverride = hostInput ? hostInput.value.trim() : "";
       
       const origin = hostOverride || window.location.origin;
       const pwd = getPass();
       const pwdPath = pwd ? `/${pwd}` : '';
 
-      const params = [];
-      if (alias) params.push(`account=${encodeURIComponent(alias)}`);
-      
-      const paramStr = params.length > 0 ? `?${params.join("&")}` : "";
+      const m3uEl = document.getElementById("m3uUrl");
+      const txtEl = document.getElementById("txtUrl");
+      const epgEl = document.getElementById("epgUrl");
 
-      document.getElementById("m3uUrl").innerText = `${origin}${pwdPath}/m3u${paramStr}`;
-      document.getElementById("txtUrl").innerText = `${origin}${pwdPath}/txt${paramStr}`;
-      document.getElementById("epgUrl").innerText = `${origin}${pwdPath}/playback.xml${paramStr}`;
+      if (m3uEl) m3uEl.innerText = `${origin}${pwdPath}/m3u`;
+      if (txtEl) txtEl.innerText = `${origin}${pwdPath}/txt`;
+      if (epgEl) epgEl.innerText = `${origin}${pwdPath}/playback.xml`;
     }
 
     // 安全 HTML 转义防止 XSS
@@ -1545,7 +1401,6 @@
     // 页面初始化加载
     window.addEventListener("load", () => {
       initConfig();
-      resetAccountForm();
     });
   </script>
 </body>
