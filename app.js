@@ -134,6 +134,47 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 获取已保存的分组配置 API
+  if (url === "/api/groups" && method === "GET") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const configPath = path.join(process.cwd(), "data", "groups.json");
+    let groups = [];
+    if (fs.existsSync(configPath)) {
+      try {
+        groups = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      } catch (e) {}
+    }
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify(groups));
+    return;
+  }
+
+  // 保存分组配置 API
+  if (url === "/api/groups" && method === "POST") {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    let body = "";
+    req.on("data", chunk => body += chunk);
+    req.on("end", () => {
+      try {
+        const data = JSON.parse(body);
+        const dataDir = path.join(process.cwd(), "data");
+        if (!fs.existsSync(dataDir)) {
+          fs.mkdirSync(dataDir, { recursive: true });
+        }
+        const configPath = path.join(dataDir, "groups.json");
+        fs.writeFileSync(configPath, JSON.stringify(data.groups || []), "utf-8");
+        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ error: "保存分组失败" }));
+      }
+    });
+    return;
+  }
+
   // 2. 获取本地台标列表 API
   if (url === "/api/logos" && method === "GET") {
     const fs = await import("node:fs");

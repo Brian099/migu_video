@@ -702,7 +702,7 @@
         </div>
 
         <div class="form-group" style="margin-top: 20px;">
-          <label>频道分组筛选 (勾选需要提取的分组，下方可直接下载或复制过滤后的 M3U 文件内容)</label>
+          <label>频道分组筛选 (勾选需提取的分组，保存后 /m3u 订阅地址将直接输出过滤后的分组频道数据)</label>
           <div class="custom-multiselect-container">
             <div class="form-control multiselect-trigger" id="groupSelectTrigger" onclick="toggleGroupDropdown(event)">
               <span id="selectedGroupsText" class="placeholder">全部频道 (不进行分组过滤)</span>
@@ -720,14 +720,10 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 12px; margin-top: 15px;">
-          <button type="button" onclick="downloadFilteredM3U()" style="flex: 1; padding: 10px 16px; background: var(--accent-color); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            下载过滤后的 M3U 文件
-          </button>
-          <button type="button" onclick="copyFilteredM3UText(this)" style="flex: 1; padding: 10px 16px; background: rgba(255, 255, 255, 0.08); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-            复制过滤后的 M3U 内容
+        <div style="margin-top: 15px;">
+          <button type="button" onclick="saveGroupSettings()" style="width: 100%; padding: 11px; background: var(--accent-color); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 0 10px var(--accent-glow);">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            保存分组配置
           </button>
         </div>
       </div>
@@ -1317,7 +1313,7 @@
     });
 
 
-    // 4. 实时极简订阅链接生成逻辑 (不带 URL 复杂参数)
+    // 4. 实时极简订阅链接生成逻辑 (动态拼接分组过滤参数)
     function generateUrls() {
       const hostInput = document.getElementById("customHost");
       let hostOverride = hostInput ? hostInput.value.trim() : "";
@@ -1326,12 +1322,22 @@
       const pwd = getPass();
       const pwdPath = pwd ? `/${pwd}` : '';
 
+      const checkboxes = document.querySelectorAll("#groupDropdownList input[type='checkbox']");
+      const selected = getSelectedGroups();
+      let groupParam = "";
+      if (selected && checkboxes.length > 0) {
+        const selectedArr = selected.split(",");
+        if (selectedArr.length < checkboxes.length) {
+          groupParam = `?group=${encodeURI(selected)}`;
+        }
+      }
+
       const m3uEl = document.getElementById("m3uUrl");
       const txtEl = document.getElementById("txtUrl");
       const epgEl = document.getElementById("epgUrl");
 
-      if (m3uEl) m3uEl.innerText = `${origin}${pwdPath}/m3u`;
-      if (txtEl) txtEl.innerText = `${origin}${pwdPath}/txt`;
+      if (m3uEl) m3uEl.innerText = `${origin}${pwdPath}/m3u${groupParam}`;
+      if (txtEl) txtEl.innerText = `${origin}${pwdPath}/txt${groupParam}`;
       if (epgEl) epgEl.innerText = `${origin}${pwdPath}/playback.xml`;
     }
 

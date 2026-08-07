@@ -43,8 +43,21 @@ function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
 
   let content = `${result.content}`;
 
-  // 1. 进行分组过滤
-  const groupFilter = searchParams ? searchParams.get("group") : null;
+  // 1. 进行分组过滤 (优先取 URL query，其次取后台保存的分组配置 data/groups.json)
+  let groupFilter = searchParams ? searchParams.get("group") : null;
+  if (!groupFilter) {
+    try {
+      const fs = await import("node:fs");
+      const configPath = `${process.cwd()}/data/groups.json`;
+      if (fs.existsSync(configPath)) {
+        const savedGroups = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+        if (Array.isArray(savedGroups) && savedGroups.length > 0) {
+          groupFilter = savedGroups.join(",");
+        }
+      }
+    } catch (e) {}
+  }
+
   if (groupFilter && groupFilter !== "全部") {
     if (url === "/m3u" || url.endsWith("interface.txt")) {
       content = filterM3UByGroup(content, groupFilter);
