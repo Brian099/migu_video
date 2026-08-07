@@ -899,13 +899,10 @@
       const url = getApiUrl(path);
       const resp = await fetch(url, options);
       
-      const contentType = resp.headers.get('content-type') || '';
-      if (contentType.includes('text/plain') || contentType.includes('text/html')) {
-        const text = await resp.clone().text();
-        if (text.includes('身份认证失败')) {
-          showLoginModal(true);
-          throw new Error('Authentication failed');
-        }
+      const text = await resp.clone().text();
+      if (text.includes('身份认证失败')) {
+        showLoginModal(true);
+        throw new Error('Authentication failed');
       }
       
       if (!resp.ok) {
@@ -1033,33 +1030,16 @@
 
     async function testAuth() {
       // 访问需要权限的 API 进行探测
-      await apiFetch('/api/accounts');
+      await apiFetch('/api/channels');
     }
 
     // 登出
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem(passKey);
-      showLoginModal(true);
-    });
-
-    // 随机6位ID生成
-    function generateRandomId() {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < 6; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
-    }
-
-    function regenerateId() {
-      document.getElementById("accId").value = generateRandomId();
-    }
-
-    function resetAccountForm() {
-      document.getElementById("accountForm").reset();
-      regenerateId();
-      setSelectedGroups("");
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem(passKey);
+        showLoginModal(true);
+      });
     }
 
     // 初始化配置探测
