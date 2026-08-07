@@ -1,8 +1,9 @@
 name: push_docker
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
+      - master
   workflow_dispatch:
 jobs:
   docker:

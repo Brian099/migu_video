@@ -221,8 +221,8 @@ const server = http.createServer(async (req, res) => {
 
   let urlToken = ""
   let urlUserId = ""
-  // 匹配是否存在用户信息
-  if (/\/{1}[^\/\s]{1,}\/{1}[^\/\s]{1,}/.test(url)) {
+  // 匹配是否存在用户信息 (如 /userId/token/pid)
+  if (!url.startsWith("/api/") && !url.startsWith("/channel_logo/") && /\/{1}[^\/\s]{1,}\/{1}[^\/\s]{1,}/.test(url)) {
     const urlSplit = url.split("/")
     if (urlSplit.length >= 3) {
       urlUserId = urlSplit[1]

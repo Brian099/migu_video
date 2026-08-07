@@ -883,7 +883,13 @@
     };
 
     function getPass() {
-      return localStorage.getItem(passKey) || '';
+      const stored = localStorage.getItem(passKey);
+      if (stored) return stored;
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0 && pathParts[0] !== 'admin' && pathParts[0] !== 'index.html' && pathParts[0] !== 'api') {
+        return pathParts[0];
+      }
+      return '';
     }
 
     function getApiUrl(path) {
