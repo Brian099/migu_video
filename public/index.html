@@ -764,7 +764,6 @@
     <!-- 选项卡按钮 -->
     <div class="tabs-nav">
       <button class="tab-btn active" onclick="switchTab('subTab', this)">订阅管理</button>
-      <button class="tab-btn" onclick="switchTab('accTab', this)">配置管理</button>
       <button class="tab-btn" onclick="switchTab('chanTab', this)">频道与台标</button>
     </div>
 
@@ -776,14 +775,7 @@
           <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           极简订阅地址生成器
         </h2>
-        <div class="row" style="grid-template-columns: 1fr;">
-          <div class="form-group">
-            <label>选择配置方案</label>
-            <input type="hidden" id="subAccount" value="">
-            <div id="subAccountOptions" class="config-options-container"></div>
-          </div>
-        </div>
-        <div class="form-group" style="margin-top: 10px;">
+        <div class="form-group">
           <label for="customHost">自定义域名/外网IP (可选，若不填则使用当前访问地址)</label>
           <input type="text" id="customHost" class="form-control" placeholder="例如 http://my-dns.com:1234" oninput="generateUrls()">
         </div>
@@ -816,91 +808,6 @@
           <div class="copy-box">
             <span class="copy-text" id="epgUrl">http://.../playback.xml</span>
             <button class="copy-btn" onclick="copyToClipboard('epgUrl', this)">复制地址</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. 配置管理 -->
-    <div id="accTab" class="tab-panel">
-      <div class="row" style="grid-template-columns: 1fr 2fr; align-items: start;">
-        <!-- 新增配置方案表单 -->
-        <div class="card">
-          <h2>添加/修改配置方案</h2>
-          <form id="accountForm" onsubmit="handleAccountSubmit(event)">
-            <div class="form-group">
-              <label for="accName">配置名称 (备注，例如: 爸爸的手机、客厅电视)</label>
-              <input type="text" id="accName" class="form-control" required placeholder="例如: 客厅电视">
-            </div>
-            <div class="form-group">
-              <label for="accId">配置ID (订阅代号)</label>
-              <div style="display: flex; gap: 10px;">
-                <input type="text" id="accId" class="form-control" required placeholder="订阅链接中使用的代号" style="flex-grow: 1;">
-                <button type="button" class="action-btn" onclick="regenerateId()" style="padding: 10px 14px;">随机</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="accUserId">Migu User ID</label>
-              <input type="text" id="accUserId" class="form-control" required placeholder="网页抓包获取的 userId">
-            </div>
-            <div class="form-group">
-              <label for="accToken">Migu Token</label>
-              <input type="password" id="accToken" class="form-control" required placeholder="网页抓包获取的 token">
-            </div>
-            <div class="form-group">
-              <label>默认频道分组 (该配置订阅内容)</label>
-              <div class="custom-multiselect-container">
-                <div class="multiselect-trigger form-control" id="groupSelectTrigger" onclick="toggleGroupDropdown(event)">
-                  <span id="selectedGroupsText" class="placeholder">全部频道 (不进行分组过滤)</span>
-                  <svg class="arrow" viewBox="0 0 24 24">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </div>
-                <div class="multiselect-dropdown" id="groupDropdown" style="display: none;">
-                  <div class="dropdown-actions">
-                    <button type="button" onclick="selectGroupsAction('all')">全选</button>
-                    <button type="button" onclick="selectGroupsAction('clear')">清空</button>
-                  </div>
-                  <div class="dropdown-list" id="groupDropdownList">
-                    <!-- 动态生成复选框 -->
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="accRate">默认画质 (清晰度)</label>
-              <select id="accRate">
-                <option value="">默认画质 (使用服务器全局配置)</option>
-                <option value="2">标清 (2)</option>
-                <option value="3" selected>高清 (3)</option>
-                <option value="4">蓝光 (4)</option>
-                <option value="7">原画 (7)</option>
-                <option value="9">4K (9)</option>
-              </select>
-            </div>
-            <button type="submit" class="action-btn" style="width:100%;">保存配置</button>
-          </form>
-        </div>
-
-        <!-- 配置列表 -->
-        <div class="card">
-          <h2>当前配置方案列表</h2>
-          <div style="overflow-x: auto;">
-            <table id="accountsTable">
-              <thead>
-                <tr>
-                  <th>配置名称</th>
-                  <th>配置ID (代号)</th>
-                  <th>Migu User ID</th>
-                  <th>播放画质</th>
-                  <th>订阅分组</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- 动态插入 -->
-              </tbody>
-            </table>
           </div>
         </div>
       </div>

@@ -8,16 +8,8 @@ import { channel, interfaceStr } from "./utils/appUtils.js";
 
 // 运行时长
 var hours = 0
-let loading = false
 
 const server = http.createServer(async (req, res) => {
-
-  while (loading) {
-    await delay(50)
-  }
-
-  loading = true
-
   // 获取请求方法、URL 和请求头
   let { method, url, headers } = req;
 
@@ -38,7 +30,6 @@ const server = http.createServer(async (req, res) => {
         printRed(`身份认证失败`)
         res.writeHead(200, { 'Content-Type': 'application/json;charset=UTF-8' });
         res.end(`身份认证失败`); // 发送文件内容
-        loading = false
         return
       } else {
         printGreen("身份认证成功")
@@ -73,7 +64,6 @@ const server = http.createServer(async (req, res) => {
         const fileContent = fs.readFileSync(filePath);
         res.writeHead(200, { "Content-Type": contentType });
         res.end(fileContent);
-        loading = false;
         return;
       } catch (err) {
         printRed(`读取台标文件失败: ${filename}`);
@@ -83,7 +73,6 @@ const server = http.createServer(async (req, res) => {
     
     res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8" });
     res.end("台标文件不存在");
-    loading = false;
     return;
   }
 
@@ -99,7 +88,6 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(404, { "Content-Type": "text/plain;charset=UTF-8" });
       res.end("index.html 文件未找到，请检查项目目录结构");
     }
-    loading = false;
     return;
   }
 
@@ -107,7 +95,6 @@ const server = http.createServer(async (req, res) => {
   if (url === "/api/config" && method === "GET") {
     res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
     res.end(JSON.stringify({ needsPass: pass !== "" }));
-    loading = false;
     return;
   }
 
@@ -144,7 +131,6 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
     res.end(JSON.stringify(channels));
-    loading = false;
     return;
   }
 
@@ -162,7 +148,6 @@ const server = http.createServer(async (req, res) => {
     }
     res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
     res.end(JSON.stringify(logos));
-    loading = false;
     return;
   }
 
@@ -176,7 +161,6 @@ const server = http.createServer(async (req, res) => {
     if (!rawFilename) {
       res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
       res.end(JSON.stringify({ error: "请求头中缺少 x-filename" }));
-      loading = false;
       return;
     }
 
@@ -196,7 +180,6 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
       res.end(JSON.stringify({ error: "上传台标失败" }));
     });
-    loading = false;
     return;
   }
 
@@ -212,7 +195,6 @@ const server = http.createServer(async (req, res) => {
     if (!filename) {
       res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
       res.end(JSON.stringify({ error: "未指定删除的台标名称" }));
-      loading = false;
       return;
     }
 
@@ -234,112 +216,6 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(404, { "Content-Type": "application/json;charset=UTF-8" });
       res.end(JSON.stringify({ error: "台标文件不存在" }));
     }
-    loading = false;
-    return;
-  }
-
-  // 5. 获取账号代号 API
-  if (url === "/api/accounts" && method === "GET") {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
-    const accountsDir = path.dirname(accountsPath);
-    if (!fs.existsSync(accountsDir)) {
-      fs.mkdirSync(accountsDir, { recursive: true });
-    }
-    let accounts = [];
-    if (fs.existsSync(accountsPath)) {
-      try {
-        accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
-    res.end(JSON.stringify(accounts));
-    loading = false;
-    return;
-  }
-
-  // 6. 添加/修改账号代号 API
-  if (url === "/api/accounts" && method === "POST") {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
-    const accountsDir = path.dirname(accountsPath);
-    if (!fs.existsSync(accountsDir)) {
-      fs.mkdirSync(accountsDir, { recursive: true });
-    }
-
-    let body = "";
-    req.on("data", chunk => {
-      body += chunk.toString();
-    });
-    req.on("end", () => {
-      try {
-        const newAccount = JSON.parse(body);
-        if (!newAccount.id || !newAccount.name || !newAccount.userId || !newAccount.token) {
-          res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
-          res.end(JSON.stringify({ error: "配置ID/配置名称/用户ID/Token缺失" }));
-          return;
-        }
-
-        let accounts = [];
-        if (fs.existsSync(accountsPath)) {
-          accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
-        }
-
-        accounts = accounts.filter(a => a.id !== newAccount.id);
-        accounts.push(newAccount);
-
-        fs.writeFileSync(accountsPath, JSON.stringify(accounts, null, 2), "utf-8");
-        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
-        res.end(JSON.stringify({ success: true, account: newAccount }));
-      } catch (err) {
-        console.error("保存账号配置失败，错误为:", err, "收到的Body为:", body);
-        res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
-        res.end(JSON.stringify({ error: "保存失败" }));
-      }
-    });
-    loading = false;
-    return;
-  }
-
-  // 7. 删除账号代号 API
-  if (url === "/api/accounts" && method === "DELETE") {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
-    const accountsDir = path.dirname(accountsPath);
-    if (!fs.existsSync(accountsDir)) {
-      fs.mkdirSync(accountsDir, { recursive: true });
-    }
-
-    const query = new URL(req.url, "http://localhost").searchParams;
-    const id = query.get("id");
-    if (!id) {
-      res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
-      res.end(JSON.stringify({ error: "未指定删除的配置ID" }));
-      loading = false;
-      return;
-    }
-
-    if (fs.existsSync(accountsPath)) {
-      try {
-        let accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
-        accounts = accounts.filter(a => a.id !== id);
-        fs.writeFileSync(accountsPath, JSON.stringify(accounts, null, 2), "utf-8");
-        res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
-        res.end(JSON.stringify({ success: true }));
-      } catch (err) {
-        res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
-        res.end(JSON.stringify({ error: "删除失败" }));
-      }
-    } else {
-      res.writeHead(404, { "Content-Type": "application/json;charset=UTF-8" });
-      res.end(JSON.stringify({ error: "账号文件不存在" }));
-    }
-    loading = false;
     return;
   }
 
@@ -366,7 +242,6 @@ const server = http.createServer(async (req, res) => {
       "Content-Type": "application/json;charset=UTF-8",
     });
     res.end();
-    loading = false;
     return;
   }
 
@@ -376,8 +251,6 @@ const server = http.createServer(async (req, res) => {
       data: '请使用GET请求',
     }));
     printRed(`使用非GET请求:${method}`)
-
-    loading = false
     return
   }
 
@@ -385,29 +258,7 @@ const server = http.createServer(async (req, res) => {
 
   // 接口
   if (interfaceList.indexOf(url) !== -1) {
-    let activeSearchParams = searchParams;
-    const accountAlias = searchParams.get("account");
-    if (accountAlias) {
-      const fs = await import("node:fs");
-      const path = await import("node:path");
-      const accountsPath = path.join(process.cwd(), "data", "accounts.json");
-      if (fs.existsSync(accountsPath)) {
-        try {
-          const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
-          const config = accounts.find(a => a.id === accountAlias);
-          if (config) {
-            activeSearchParams = new URLSearchParams();
-            activeSearchParams.set("account", accountAlias);
-            if (config.group) activeSearchParams.set("group", config.group);
-            if (config.rateType) activeSearchParams.set("rateType", config.rateType);
-          }
-        } catch (e) {
-          console.error("读取 accounts.json 失败", e);
-        }
-      }
-    }
-
-    const interfaceObj = interfaceStr(url, headers, urlUserId, urlToken, activeSearchParams)
+    const interfaceObj = interfaceStr(url, headers, urlUserId, urlToken, searchParams)
     if (interfaceObj.content == null) {
       interfaceObj.content = "获取失败"
     }
@@ -418,35 +269,12 @@ const server = http.createServer(async (req, res) => {
     }
     res.statusCode = 200;
     res.end(interfaceObj.content); // 发送文件内容
-    loading = false;
     return;
   }
 
   let activeUserId = urlUserId;
   let activeToken = urlToken;
   let activeRateType = searchParams.get("rateType"); // 优先读取 URL 传递的画质
-
-  const accountAlias = searchParams.get("account");
-  if (accountAlias) {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-    const accountsPath = path.join(process.cwd(), "data", "accounts.json");
-    if (fs.existsSync(accountsPath)) {
-      try {
-        const accounts = JSON.parse(fs.readFileSync(accountsPath, "utf-8"));
-        const config = accounts.find(a => a.id === accountAlias);
-        if (config) {
-          activeUserId = config.userId;
-          activeToken = config.token;
-          if (config.rateType && !activeRateType) {
-            activeRateType = config.rateType;
-          }
-        }
-      } catch (e) {
-        console.error("读取 accounts.json 失败", e);
-      }
-    }
-  }
 
   // 频道
   const result = await channel(url, activeUserId, activeToken, activeRateType)
@@ -459,7 +287,6 @@ const server = http.createServer(async (req, res) => {
       'Content-Type': 'application/json;charset=UTF-8',
     });
     res.end(result.desc)
-    loading = false;
     return;
   }
 
@@ -469,8 +296,6 @@ const server = http.createServer(async (req, res) => {
   });
 
   res.end()
-
-  loading = false;
 })
 
 server.listen(port, async () => {

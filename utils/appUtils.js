@@ -79,24 +79,6 @@ function interfaceStr(url, headers, urlUserId, urlToken, searchParams) {
 
   content = content.replaceAll("${replace}", replaceHost);
 
-  // 3. 动态拼接 Query 参数到播放链接末尾 (例如 ?account=mom)
-  const paramsToAppend = [];
-  const account = searchParams ? searchParams.get("account") : null;
-  if (account) paramsToAppend.push(`account=${encodeURIComponent(account)}`);
-
-  if (paramsToAppend.length > 0) {
-    const appendStr = paramsToAppend.join("&");
-    const lines = content.split("\n");
-    for (let k = 0; k < lines.length; k++) {
-      const trimmed = lines[k].trim();
-      if (trimmed && !trimmed.startsWith("#") && (trimmed.startsWith("http") || trimmed.includes(replaceHost))) {
-        const separator = trimmed.includes("?") ? "&" : "?";
-        lines[k] = trimmed + separator + appendStr;
-      }
-    }
-    content = lines.join("\n");
-  }
-
   result.content = content;
   return result;
 }
