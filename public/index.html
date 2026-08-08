@@ -630,6 +630,44 @@
     <!-- 选项卡内容 -->
     <!-- 1. 订阅管理 -->
     <div id="subTab" class="tab-panel active">
+      <!-- 咪咕账号与画质可视化配置卡片 -->
+      <div class="card">
+        <h2>
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          咪咕账号与画质配置
+        </h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+          <div class="form-group">
+            <label for="cfgUserId">咪咕 User ID (muserId)</label>
+            <input type="text" id="cfgUserId" class="form-control" placeholder="例如: 1654863992">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgToken">咪咕 Token (mtoken)</label>
+            <input type="text" id="cfgToken" class="form-control" placeholder="例如: nlps0FFE0CCA4087D2DD01D6">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgRateType">默认画质 / 清晰度 (mrateType)</label>
+            <select id="cfgRateType" class="form-control" style="background: rgba(17, 24, 39, 0.8); color: var(--text-main);">
+              <option value="3">高清 (RateType 3 - 默认推荐)</option>
+              <option value="2">标清 (RateType 2)</option>
+              <option value="4">蓝光 (RateType 4 - 需VIP账号)</option>
+              <option value="7">原画 (RateType 7 - 需VIP账号)</option>
+              <option value="9">4K (RateType 9 - 需VIP账号)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+          <button type="button" onclick="saveUserAccountConfig()" style="width: 100%; padding: 11px; background: var(--accent-color); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 0 10px var(--accent-glow);">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            保存账号与画质设置
+          </button>
+        </div>
+      </div>
+
       <div class="card">
         <h2>
           <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
@@ -976,10 +1014,51 @@
     async function reloadData() {
       await Promise.all([
         loadChannels(),
-        loadLocalLogos()
+        loadLocalLogos(),
+        loadUserAccountConfig()
       ]);
       populateGroupSelectors();
       generateUrls();
+    }
+
+    // 加载已保存的账号与画质配置
+    async function loadUserAccountConfig() {
+      try {
+        const resp = await apiFetch("/api/user-config");
+        const data = await resp.json();
+        if (data) {
+          const uEl = document.getElementById("cfgUserId");
+          const tEl = document.getElementById("cfgToken");
+          const rEl = document.getElementById("cfgRateType");
+          if (uEl) uEl.value = data.userId || "";
+          if (tEl) tEl.value = data.token || "";
+          if (rEl) rEl.value = String(data.rateType || 3);
+        }
+      } catch (e) {
+        console.error("加载账号与画质配置失败", e);
+      }
+    }
+
+    // 保存账号与画质配置
+    async function saveUserAccountConfig() {
+      const uVal = document.getElementById("cfgUserId").value.trim();
+      const tVal = document.getElementById("cfgToken").value.trim();
+      const rVal = document.getElementById("cfgRateType").value;
+
+      try {
+        await apiFetch("/api/user-config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: uVal,
+            token: tVal,
+            rateType: parseInt(rVal)
+          })
+        });
+        showToast("账号与画质设置保存成功！已同步更新后台配置。");
+      } catch (err) {
+        showToast("保存账号与画质设置失败！", true);
+      }
     }
 
     function getSelectedGroups() {

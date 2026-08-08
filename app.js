@@ -1,5 +1,5 @@
 import http from "node:http"
-import { host, pass, port, programInfoUpdateInterval, token, userId } from "./config.js";
+import { host, pass, port, programInfoUpdateInterval, token, userId, rateType, saveUserConfig } from "./config.js";
 import { getDateTimeStr } from "./utils/time.js";
 import update from "./utils/updateData.js";
 import { printBlue, printGreen, printMagenta, printRed } from "./utils/colorOut.js";
@@ -174,6 +174,36 @@ const server = http.createServer(async (req, res) => {
       } catch (err) {
         res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
         res.end(JSON.stringify({ error: "保存分组失败" }));
+      }
+    });
+    return;
+  }
+
+  // 获取已保存的用户账号与画质配置 API
+  if (url === "/api/user-config" && method === "GET") {
+    res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+    res.end(JSON.stringify({ userId, token, rateType }));
+    return;
+  }
+
+  // 保存用户账号与画质配置 API
+  if (url === "/api/user-config" && method === "POST") {
+    let body = "";
+    req.on("data", chunk => body += chunk);
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const saved = saveUserConfig(data);
+        if (saved) {
+          res.writeHead(200, { "Content-Type": "application/json;charset=UTF-8" });
+          res.end(JSON.stringify({ success: true }));
+        } else {
+          res.writeHead(500, { "Content-Type": "application/json;charset=UTF-8" });
+          res.end(JSON.stringify({ error: "保存配置失败" }));
+        }
+      } catch (err) {
+        res.writeHead(400, { "Content-Type": "application/json;charset=UTF-8" });
+        res.end(JSON.stringify({ error: "配置格式无效" }));
       }
     });
     return;
