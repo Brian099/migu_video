@@ -632,10 +632,39 @@
     <div id="subTab" class="tab-panel active">
       <!-- 咪咕账号与画质可视化配置卡片 -->
       <div class="card">
-        <h2>
-          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          咪咕账号与画质配置
-        </h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <h2 style="margin-bottom: 0;">
+            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            咪咕账号与画质配置
+          </h2>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="toggleSmartPasteBox()" style="background: var(--accent-color); color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 0 8px var(--accent-glow);">
+              <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              ✨ 智能提取/解析凭据
+            </button>
+            <button type="button" onclick="copyMiguCookieScript(this)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-muted); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+              <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+              复制提取脚本
+            </button>
+          </div>
+        </div>
+
+        <!-- 智能解析粘贴区域 -->
+        <div id="smartPasteBox" style="display: none; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+          <div style="font-size: 13px; font-weight: 500; color: var(--accent-color); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            咪咕凭据智能识别助手 (支持任意粘贴 Cookie 字符串 / userInfo JSON / 网页文本)
+          </div>
+          <textarea id="smartPasteInput" class="form-control" style="height: 75px; resize: vertical; font-family: monospace; font-size: 12px;" placeholder="在此粘贴任意包含咪咕凭据的文本 (例如: document.cookie 内容、userInfo JSON 或控制台打印数据)..."></textarea>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" onclick="handleSmartParseText()" style="flex: 1; padding: 7px 12px; background: var(--accent-color); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              ⚡ 立即智能识别并自动填充
+            </button>
+            <button type="button" onclick="openMiguOfficialSite()" style="padding: 7px 14px; background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; font-size: 13px; cursor: pointer;">
+              🌐 打开咪咕官网登录页
+            </button>
+          </div>
+        </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
           <div class="form-group">
@@ -1058,6 +1087,102 @@
         showToast("账号与画质设置保存成功！已同步更新后台配置。");
       } catch (err) {
         showToast("保存账号与画质设置失败！", true);
+      }
+    }
+
+    // 切换显示智能粘贴提取区域
+    function toggleSmartPasteBox() {
+      const box = document.getElementById("smartPasteBox");
+      if (box) {
+        box.style.display = (box.style.display === "none") ? "block" : "none";
+      }
+    }
+
+    // 打开咪咕视频官网登录页
+    function openMiguOfficialSite() {
+      window.open("https://www.miguvideo.com", "_blank");
+    }
+
+    // 智能解析粘贴文本提取 userId 与 token
+    function handleSmartParseText() {
+      const inputEl = document.getElementById("smartPasteInput");
+      const rawText = inputEl ? inputEl.value.trim() : "";
+      if (!rawText) {
+        showToast("请先粘贴包含咪咕凭据的文本或 Cookie！", true);
+        return;
+      }
+
+      let decoded = rawText;
+      try {
+        decoded = decodeURIComponent(rawText);
+      } catch (e) {}
+
+      let foundUserId = "";
+      let foundToken = "";
+
+      // 正则匹配 userId
+      const uMatch = decoded.match(/["']?userId["']?\s*[:=]\s*["']?(\d+)["']?/i) ||
+                     decoded.match(/userId%22%3A%22(\d+)%22/i) ||
+                     decoded.match(/muserId\s*=\s*(\d+)/i) ||
+                     decoded.match(/user_id\s*[:=]\s*["']?(\d+)["']?/i);
+      if (uMatch) {
+        foundUserId = uMatch[1];
+      }
+
+      // 正则匹配 token
+      const tMatch = decoded.match(/["']?(?:userToken|token|mtoken)["']?\s*[:=]\s*["']?([a-zA-Z0-9_-]{12,})["']?/i) ||
+                     decoded.match(/userToken%22%3A%22([a-zA-Z0-9_-]+)%22/i) ||
+                     decoded.match(/mtoken\s*=\s*([a-zA-Z0-9_-]+)/i) ||
+                     decoded.match(/user_token\s*[:=]\s*["']?([a-zA-Z0-9_-]+)["']?/i);
+      if (tMatch) {
+        foundToken = tMatch[1];
+      }
+
+      if (foundUserId || foundToken) {
+        if (foundUserId) document.getElementById("cfgUserId").value = foundUserId;
+        if (foundToken) document.getElementById("cfgToken").value = foundToken;
+        showToast(`🎉 智能提取成功！UserID: ${foundUserId || '未变'} | Token: ${foundToken ? '已自动填充' : '未变'}`);
+      } else {
+        showToast("未能从粘贴文本中识别出有效的 UserID 或 Token，请确认复制的内容！", true);
+      }
+    }
+
+    // 复制一键获取咪咕 Cookie/Token 的浏览器控制台脚本
+    function copyMiguCookieScript(btn) {
+      const scriptCode = `function generateSubscriptionUrl() {
+    const getCookie = (name) => {
+        const value = '; ' + document.cookie;
+        const parts = value.split('; ' + name + '=');
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        }
+    };
+    const user_info = JSON.parse(decodeURIComponent(getCookie('userInfo')));
+    if (user_info) {
+        const user_id = user_info.userId;
+        const user_token = user_info.userToken;
+        if (user_id && user_token) {
+            console.log("userId: " + user_id);
+            console.log("userToken: " + user_token);
+            alert("提取成功！\\nuserId: " + user_id + "\\nuserToken: " + user_token);
+            return { userId: user_id, userToken: user_token };
+        } else {
+            alert("用户 Cookie 字段缺失");
+        }
+    } else {
+        alert("未找到用户 Cookie，请先在 miguvideo.com 登录账号");
+    }
+}
+generateSubscriptionUrl();`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(scriptCode).then(() => {
+          showToast("已复制提取脚本！登录 miguvideo.com 后在 F12 控制台粘贴运行。");
+        }).catch(err => {
+          fallbackCopyToClipboard(scriptCode, btn);
+        });
+      } else {
+        fallbackCopyToClipboard(scriptCode, btn);
       }
     }
 
