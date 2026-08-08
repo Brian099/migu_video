@@ -947,10 +947,13 @@
     }
 
     function onCopySuccess(btn) {
+      if (!btn) return;
+      const originalText = btn.dataset.origText || btn.innerText;
+      btn.dataset.origText = originalText;
       btn.innerText = "已复制!";
       btn.classList.add("copied");
       setTimeout(() => {
-        btn.innerText = "复制地址";
+        btn.innerText = originalText;
         btn.classList.remove("copied");
       }, 2000);
     }
@@ -1177,6 +1180,7 @@ generateSubscriptionUrl();`;
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(scriptCode).then(() => {
+          onCopySuccess(btn);
           showToast("已复制提取脚本！登录 miguvideo.com 后在 F12 控制台粘贴运行。");
         }).catch(err => {
           fallbackCopyToClipboard(scriptCode, btn);
