@@ -26,22 +26,23 @@ const cntvNames = {
 
 // 域名白名单
 const domainWhiteList = [
-  "tvpull.dxhmt.cn:9081",
-  "live.dxhmt.cn:9081",
+  "hlszymgsplive.miguvideo.com:8080",
   "hlsztemgsplive.miguvideo.com:8080",
+  "hlsbkmgsplive.miguvideo.com",
+  "tvpull.dxhmt.cn:9081",
   "play.kankanlive.com",
   "liveplay-srs.voc.com.cn",
   "ali-xwl.cztv.com",
   "l.cztvcloud.com",
   "masterpull.hljtv.com",
-  "hlsbkmgsplive.miguvideo.com",
-  "live.ynurl.com",
-  "rmplive.hljtv.com",
   "stream.hrbtv.net",
+  "rmplive.hljtv.com",
   "gxlive.snrtv.com",
-  "pull-hls-f11.douyincdn.com",
-  "hlsal-ldvt.qing.mgtv.com",
-  "play-qukan.cztv.com",
+  "play-a2.quklive.com",
+  "nklive.nbs.cn",
+  "stream.thmz.com",
+  "jwcdnqx.hebyun.com.cn",
+  "hlsal-ldvt.qing.mgtv.com"
 ]
 
 export { cntvNames, domainWhiteList, repoLinkUpdateTimestamp }
