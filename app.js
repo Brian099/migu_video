@@ -13,10 +13,12 @@ const server = http.createServer(async (req, res) => {
   // 获取请求方法、URL 和请求头
   let { method, url, headers } = req;
 
-  // 剥离 URL 中的 Query 参数
+  // 剥离 URL 中的 Query 参数（保留原始 rawQuery 供 channel 函数提取回看参数）
+  let rawQuery = "";
   let searchParams = new URLSearchParams();
   const queryIndex = url.indexOf("?");
   if (queryIndex !== -1) {
+    rawQuery = url.substring(queryIndex);
     searchParams = new URLSearchParams(url.substring(queryIndex + 1));
     url = url.substring(0, queryIndex);
   }
@@ -352,7 +354,7 @@ const server = http.createServer(async (req, res) => {
   let activeRateType = searchParams.get("rateType"); // 优先读取 URL 传递的画质
 
   // 频道
-  const result = await channel(url, activeUserId, activeToken, activeRateType)
+  const result = await channel(url + rawQuery, activeUserId, activeToken, activeRateType)
 
   // 结果异常
   if (result.code != 302) {
